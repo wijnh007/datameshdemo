@@ -35,6 +35,7 @@
       <li><a href="#locatie" data-i18n="nav_venue">Locatie</a></li>
       <li><a href="#reizen" data-i18n="nav_travel">Reizen</a></li>
       <li><a href="#praktisch" data-i18n="nav_practical">Praktisch</a></li>
+      <li><a href="#fotos" data-i18n="nav_photos">Foto's</a></li>
       <li><a href="#contact" data-i18n="nav_contact">Contact</a></li>
     </ul>
 
@@ -56,6 +57,7 @@
   <a href="#locatie" data-i18n="nav_venue">Locatie</a>
   <a href="#reizen" data-i18n="nav_travel">Reizen</a>
   <a href="#praktisch" data-i18n="nav_practical">Praktisch</a>
+  <a href="#fotos" data-i18n="nav_photos">Foto's</a>
   <a href="#contact" data-i18n="nav_contact">Contact</a>
   <div class="nav__lang" role="group" aria-label="Taal kiezen">
     <button class="lang-btn" data-lang="nl">NL</button>
@@ -500,6 +502,58 @@
     </div>
   </div>
 </section>
+
+<!-- ============================================================
+     FOTOS
+     ============================================================ -->
+<section id="fotos" aria-labelledby="fotos-title">
+  <div class="container">
+
+    <div class="fade-up">
+      <span class="section-tag" data-i18n="fotos_tag">Deel jouw herinneringen</span>
+      <h2 class="section-title" id="fotos-title" data-i18n="fotos_title">Foto's</h2>
+      <p class="section-subtitle" data-i18n="fotos_subtitle">Upload jouw foto's en bekijk die van andere gasten. Kies een categorie om te beginnen.</p>
+    </div>
+
+    <!-- Shown when Supabase is not yet configured -->
+    <div id="photos-not-configured" class="photos-setup-notice" style="display:none;" role="alert">
+      <strong>⚙️ Foto-upload nog niet geconfigureerd.</strong>
+      Open <code>main.js</code> en volg de setup-instructies bovenaan het PHOTOS-blok om Supabase te koppelen.
+    </div>
+
+    <!-- Category pills (populated by JS) -->
+    <div id="photo-cat-pills" class="photo-cat-pills fade-up" role="group" aria-label="Fotocategorieën"></div>
+
+    <!-- Upload zone -->
+    <div class="upload-zone fade-up" id="upload-zone" role="region" aria-label="Foto's uploaden">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="4" y="10" width="32" height="24" rx="3" stroke="#8FAF78" stroke-width="1.8" fill="none"/>
+        <circle cx="14" cy="19" r="3" stroke="#8FAF78" stroke-width="1.5" fill="none"/>
+        <path d="M4 28L12 20L18 26L25 18L36 28" stroke="#8FAF78" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+        <path d="M20 6V2M20 2L17 5M20 2L23 5" stroke="#C9A96E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <p data-i18n="upload_drop_hint">Sleep foto's hierheen of klik om te selecteren</p>
+      <p class="upload-formats" data-i18n="upload_formats">JPG, PNG, HEIC, WebP · max. 20 MB per foto</p>
+      <button class="btn" id="upload-btn" type="button" data-i18n="upload_btn">Foto's kiezen</button>
+      <input type="file" id="upload-input" accept="image/*,.heic,.heif" multiple hidden aria-hidden="true" />
+    </div>
+
+    <!-- Per-file upload progress list -->
+    <div id="upload-list" class="upload-list" aria-live="polite" aria-label="Upload voortgang"></div>
+
+    <!-- Photo grid -->
+    <div id="photo-grid" class="photo-grid" aria-label="Fotogalerij"></div>
+
+  </div>
+</section>
+
+<!-- Lightbox (shared, outside sections) -->
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Foto in volledig formaat">
+  <button id="lb-close" class="lb-close" aria-label="Sluiten">&times;</button>
+  <button id="lb-prev" class="lb-prev" aria-label="Vorige foto" style="display:none">&#8249;</button>
+  <img id="lb-img" class="lb-img" alt="Foto in volledig formaat" />
+  <button id="lb-next" class="lb-next" aria-label="Volgende foto" style="display:none">&#8250;</button>
+</div>
 
 <!-- ============================================================
      CONTACT
