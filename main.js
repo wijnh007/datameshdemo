@@ -107,6 +107,27 @@ const TRANSLATIONS = {
     contact_subtitle: 'Heb je vragen over de bruiloft, de locatie of de reis? Stuur ons gerust een berichtje.',
     contact_email_label: 'Stuur een e-mail',
     contact_footer: 'Aina & Daan · 4 juli 2026 · Vintermossen, Zweden',
+
+    // Photos section
+    nav_photos: "Foto's",
+    fotos_tag: 'Deel jouw herinneringen',
+    fotos_title: "Foto's",
+    fotos_subtitle: "Upload jouw foto's en bekijk die van andere gasten. Kies een categorie om te beginnen.",
+    cat_voorbereiding: 'Voorbereiding',
+    cat_ladies_night: 'Vrijgezellenavond ♀',
+    cat_mens_night: 'Vrijgezellenavond ♂',
+    cat_bruiloft: 'Bruiloft',
+    cat_feest: 'Feest',
+    cat_ochtend_erna: 'Ochtend erna',
+    upload_drop_hint: "Sleep foto's hierheen of klik om te selecteren",
+    upload_formats: 'JPG, PNG, HEIC, WebP · max. 20 MB per foto',
+    upload_btn: "Foto's kiezen",
+    gallery_empty: 'Nog geen foto\'s in deze categorie. Wees de eerste!',
+    gallery_loading: "Foto's laden\u2026",
+    gallery_load_error: 'Kon foto\'s niet laden. Probeer opnieuw.',
+    upload_uploading: 'Uploaden\u2026',
+    upload_done: 'Geüpload \u2713',
+    upload_error: 'Mislukt — probeer opnieuw',
   },
 
   en: {
@@ -207,6 +228,27 @@ const TRANSLATIONS = {
     contact_subtitle: 'Have questions about the wedding, venue or travel? Feel free to send us a message.',
     contact_email_label: 'Send an email',
     contact_footer: 'Aina & Daan · July 4, 2026 · Vintermossen, Sweden',
+
+    // Photos section
+    nav_photos: 'Photos',
+    fotos_tag: 'Share your memories',
+    fotos_title: 'Photos',
+    fotos_subtitle: 'Upload your photos and browse those of other guests. Choose a category to get started.',
+    cat_voorbereiding: 'Preparation',
+    cat_ladies_night: "Ladies' Night \u2640",
+    cat_mens_night: "Men's Night \u2642",
+    cat_bruiloft: 'Wedding',
+    cat_feest: 'Party',
+    cat_ochtend_erna: 'Morning After',
+    upload_drop_hint: 'Drag photos here or click to select',
+    upload_formats: 'JPG, PNG, HEIC, WebP · max. 20 MB per photo',
+    upload_btn: 'Choose photos',
+    gallery_empty: 'No photos yet in this category. Be the first!',
+    gallery_loading: 'Loading photos\u2026',
+    gallery_load_error: 'Could not load photos. Please try again.',
+    upload_uploading: 'Uploading\u2026',
+    upload_done: 'Uploaded \u2713',
+    upload_error: 'Failed — please try again',
   },
 
   sv: {
@@ -307,6 +349,27 @@ const TRANSLATIONS = {
     contact_subtitle: 'Har du frågor om bröllopet, platsen eller resan? Skicka gärna ett meddelande.',
     contact_email_label: 'Skicka ett e-postmeddelande',
     contact_footer: 'Aina & Daan · 4 juli 2026 · Vintermossen, Sverige',
+
+    // Photos section
+    nav_photos: 'Foton',
+    fotos_tag: 'Dela dina minnen',
+    fotos_title: 'Foton',
+    fotos_subtitle: 'Ladda upp dina bilder och se andras. Välj en kategori för att börja.',
+    cat_voorbereiding: 'Förberedelse',
+    cat_ladies_night: 'Möhippa \u2640',
+    cat_mens_night: 'Svensexa \u2642',
+    cat_bruiloft: 'Bröllopet',
+    cat_feest: 'Fest',
+    cat_ochtend_erna: 'Dagen efter',
+    upload_drop_hint: 'Dra bilder hit eller klicka för att välja',
+    upload_formats: 'JPG, PNG, HEIC, WebP · max. 20 MB per bild',
+    upload_btn: 'Välj bilder',
+    gallery_empty: 'Inga foton ännu i den här kategorin. Bli den första!',
+    gallery_loading: 'Laddar bilder\u2026',
+    gallery_load_error: 'Kunde inte ladda bilder. Försök igen.',
+    upload_uploading: 'Laddar upp\u2026',
+    upload_done: 'Uppladdad \u2713',
+    upload_error: 'Misslyckades — försök igen',
   }
 };
 
@@ -366,6 +429,9 @@ function applyLang(lang) {
 
   // Save preference
   localStorage.setItem('wedding-lang', lang);
+
+  // Re-render dynamically-built photo category pills
+  if (photosReady) renderCatPills();
 }
 
 /* ============================================================
@@ -539,6 +605,300 @@ function initCTA() {
 }
 
 /* ============================================================
+   PHOTO UPLOAD & GALLERY — Supabase Storage (REST API, no SDK)
+   ============================================================
+
+   SETUP (one-time, ~5 minutes)
+   ─────────────────────────────
+   1. Go to https://supabase.com → New project
+   2. Storage → New bucket
+        Name : wedding-photos
+        Public: ON (toggle to enabled)
+   3. Storage → Policies → "wedding-photos" bucket → New policy
+        For SELECT (read/list):
+          Policy name : allow_public_select
+          Allowed operation : SELECT
+          Target roles : public
+          USING expression : true
+        For INSERT (upload):
+          Policy name : allow_public_insert
+          Allowed operation : INSERT
+          Target roles : public
+          WITH CHECK expression : true
+   4. Settings → API → copy "Project URL" and "anon public" key
+   5. Paste both below and save
+
+   ============================================================ */
+const SUPABASE_URL  = '';   // e.g. 'https://abcdefgh.supabase.co'
+const SUPABASE_ANON = '';   // anon/public key (safe to expose)
+const PHOTO_BUCKET  = 'wedding-photos';
+const MAX_FILE_MB   = 20;
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+
+const PHOTO_CATS = [
+  { key: 'voorbereiding', icon: '💄' },
+  { key: 'ladies-night',  icon: '🌸' },
+  { key: 'mens-night',    icon: '🌲' },
+  { key: 'bruiloft',      icon: '💍' },
+  { key: 'feest',         icon: '🎉' },
+  { key: 'ochtend-erna',  icon: '☀️' },
+];
+
+let activeCat      = PHOTO_CATS[0].key;
+let lightboxPhotos = [];
+let lightboxIndex  = 0;
+let photosReady    = false;
+
+function photosConfigured() {
+  return SUPABASE_URL.startsWith('https://') && SUPABASE_ANON.length > 10;
+}
+
+// ── Supabase helpers (raw fetch, no SDK) ─────────────────────
+
+async function sbList(cat) {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/list/${PHOTO_BUCKET}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'apikey': SUPABASE_ANON,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      prefix: cat,
+      limit: 200,
+      sortBy: { column: 'created_at', order: 'desc' },
+    }),
+  });
+  if (!res.ok) throw new Error(`List failed: ${res.status}`);
+  return res.json();
+}
+
+async function sbUpload(path, file) {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${PHOTO_BUCKET}/${path}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'apikey': SUPABASE_ANON,
+      'Content-Type': file.type || 'application/octet-stream',
+      'x-upsert': 'false',
+    },
+    body: file,
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(body);
+  }
+  return res.json();
+}
+
+function sbPublicUrl(path) {
+  return `${SUPABASE_URL}/storage/v1/object/public/${PHOTO_BUCKET}/${path}`;
+}
+
+// ── Category pills ────────────────────────────────────────────
+
+function renderCatPills() {
+  const t = TRANSLATIONS[currentLang];
+  const container = document.getElementById('photo-cat-pills');
+  if (!container) return;
+  container.innerHTML = '';
+  PHOTO_CATS.forEach(cat => {
+    const key = 'cat_' + cat.key.replace(/-/g, '_');
+    const btn = document.createElement('button');
+    btn.className = 'photo-cat-btn' + (cat.key === activeCat ? ' active' : '');
+    btn.setAttribute('data-cat', cat.key);
+    btn.innerHTML = `${cat.icon} <span>${t[key] || cat.key}</span>`;
+    btn.addEventListener('click', () => switchCat(cat.key));
+    container.appendChild(btn);
+  });
+}
+
+function switchCat(key) {
+  activeCat = key;
+  document.querySelectorAll('.photo-cat-btn').forEach(btn =>
+    btn.classList.toggle('active', btn.getAttribute('data-cat') === key)
+  );
+  loadGallery(key);
+}
+
+// ── Gallery ───────────────────────────────────────────────────
+
+async function loadGallery(cat) {
+  const grid = document.getElementById('photo-grid');
+  if (!grid) return;
+  const t = TRANSLATIONS[currentLang];
+  grid.innerHTML = `<p class="gallery-status">${t.gallery_loading}</p>`;
+
+  try {
+    const files = await sbList(cat);
+    const photos = (Array.isArray(files) ? files : [])
+      .filter(f => f.name && f.name !== '.emptydir');
+
+    if (!photos.length) {
+      grid.innerHTML = `<p class="gallery-status">${t.gallery_empty}</p>`;
+      lightboxPhotos = [];
+      return;
+    }
+
+    lightboxPhotos = photos.map(f => sbPublicUrl(`${cat}/${f.name}`));
+    grid.innerHTML = '';
+
+    lightboxPhotos.forEach((url, i) => {
+      const item = document.createElement('div');
+      item.className = 'photo-item fade-up';
+      item.setAttribute('role', 'button');
+      item.setAttribute('tabindex', '0');
+      item.setAttribute('aria-label', `Foto ${i + 1}`);
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = `Foto ${i + 1}`;
+      img.loading = 'lazy';
+      item.appendChild(img);
+      item.addEventListener('click', () => openLightbox(i));
+      item.addEventListener('keydown', e => { if (e.key === 'Enter') openLightbox(i); });
+      grid.appendChild(item);
+
+      // Trigger fade-in animation
+      requestAnimationFrame(() => requestAnimationFrame(() => item.classList.add('visible')));
+    });
+
+  } catch (err) {
+    console.error(err);
+    grid.innerHTML = `<p class="gallery-status gallery-error">${t.gallery_load_error}</p>`;
+  }
+}
+
+// ── Upload ────────────────────────────────────────────────────
+
+function setupUpload() {
+  const zone  = document.getElementById('upload-zone');
+  const input = document.getElementById('upload-input');
+  const btn   = document.getElementById('upload-btn');
+  if (!zone || !input || !btn) return;
+
+  btn.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => {
+    handleFiles([...input.files]);
+    input.value = '';
+  });
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    handleFiles([...e.dataTransfer.files]);
+  });
+}
+
+async function handleFiles(files) {
+  const t    = TRANSLATIONS[currentLang];
+  const list = document.getElementById('upload-list');
+  if (!list) return;
+
+  const valid = files.filter(f => {
+    const typeOk = ACCEPTED_TYPES.includes(f.type) || /\.(heic|heif)$/i.test(f.name);
+    const sizeOk = f.size <= MAX_FILE_MB * 1024 * 1024;
+    return typeOk && sizeOk;
+  });
+  if (!valid.length) return;
+
+  for (const file of valid) {
+    const ext      = file.name.split('.').pop().toLowerCase();
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path     = `${activeCat}/${filename}`;
+
+    const item = document.createElement('div');
+    item.className = 'upload-item';
+    item.innerHTML = `
+      <span class="upload-item__name">${file.name}</span>
+      <span class="upload-item__status uploading">${t.upload_uploading}</span>
+      <div class="upload-progress"><div class="upload-progress__bar"></div></div>`;
+    list.prepend(item);
+
+    const statusEl = item.querySelector('.upload-item__status');
+    const barEl    = item.querySelector('.upload-progress__bar');
+
+    try {
+      await sbUpload(path, file);
+      statusEl.textContent = t.upload_done;
+      statusEl.className   = 'upload-item__status done';
+      barEl.style.cssText  = 'width:100%; animation:none; background:var(--color-forest)';
+      setTimeout(() => loadGallery(activeCat), 600);
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = t.upload_error;
+      statusEl.className   = 'upload-item__status error';
+      barEl.style.cssText  = 'width:100%; animation:none; background:#c0392b';
+    }
+  }
+}
+
+// ── Lightbox ──────────────────────────────────────────────────
+
+function setupLightbox() {
+  const lb = document.getElementById('lightbox');
+  if (!lb) return;
+  document.getElementById('lb-close')?.addEventListener('click', closeLightbox);
+  document.getElementById('lb-prev')?.addEventListener('click', () => moveLightbox(-1));
+  document.getElementById('lb-next')?.addEventListener('click', () => moveLightbox(1));
+  lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape')     closeLightbox();
+    if (e.key === 'ArrowLeft')  moveLightbox(-1);
+    if (e.key === 'ArrowRight') moveLightbox(1);
+  });
+}
+
+function openLightbox(i) {
+  lightboxIndex = i;
+  const lb  = document.getElementById('lightbox');
+  const img = document.getElementById('lb-img');
+  if (!lb || !img) return;
+  img.src = lightboxPhotos[i];
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  updateLightboxNav();
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function moveLightbox(dir) {
+  lightboxIndex = (lightboxIndex + dir + lightboxPhotos.length) % lightboxPhotos.length;
+  const img = document.getElementById('lb-img');
+  if (img) img.src = lightboxPhotos[lightboxIndex];
+  updateLightboxNav();
+}
+
+function updateLightboxNav() {
+  const show = lightboxPhotos.length > 1;
+  const prev = document.getElementById('lb-prev');
+  const next = document.getElementById('lb-next');
+  if (prev) prev.style.display = show ? '' : 'none';
+  if (next) next.style.display = show ? '' : 'none';
+}
+
+// ── Init ──────────────────────────────────────────────────────
+
+function initPhotos() {
+  const notice = document.getElementById('photos-not-configured');
+  if (!photosConfigured()) {
+    if (notice) notice.style.display = '';
+    return;
+  }
+  if (notice) notice.style.display = 'none';
+  photosReady = true;
+  renderCatPills();
+  setupUpload();
+  setupLightbox();
+  loadGallery(activeCat);
+}
+
+/* ============================================================
    LANG BUTTON HANDLERS
    ============================================================ */
 function initLangButtons() {
@@ -560,6 +920,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNav();
   initCTA();
   initMap();
+  initPhotos();
   initLangButtons();
   initAnimations();
 
