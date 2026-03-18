@@ -139,45 +139,34 @@
   </div>
 
   <script>
-    let todos = [];
+    const STORAGE_KEY = 'datameshdemo-todos';
 
-    async function load() {
-      const res = await fetch('/api/todos');
-      todos = await res.json();
-      render();
+    let todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let nextId = todos.length ? Math.max(...todos.map(t => t.id)) + 1 : 1;
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
     }
 
-    async function addTodo() {
+    function addTodo() {
       const input = document.getElementById('todo-input');
       const text = input.value.trim();
       if (!text) return;
-      const res = await fetch('/api/todos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      });
-      if (res.ok) {
-        todos.push(await res.json());
-        input.value = '';
-        render();
-      }
+      todos.push({ id: nextId++, text, completed: false });
+      input.value = '';
+      save();
+      render();
     }
 
-    async function toggleTodo(id) {
-      const res = await fetch(`/api/todos/${id}`, { method: 'PATCH' });
-      if (res.ok) {
-        const updated = await res.json();
-        todos = todos.map(t => t.id === id ? updated : t);
-        render();
-      }
+    function toggleTodo(id) {
+      const todo = todos.find(t => t.id === id);
+      if (todo) { todo.completed = !todo.completed; save(); render(); }
     }
 
-    async function deleteTodo(id) {
-      const res = await fetch(`/api/todos/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        todos = todos.filter(t => t.id !== id);
-        render();
-      }
+    function deleteTodo(id) {
+      todos = todos.filter(t => t.id !== id);
+      save();
+      render();
     }
 
     function render() {
@@ -186,10 +175,7 @@
       const stats = document.getElementById('stats');
 
       const done = todos.filter(t => t.completed).length;
-      stats.textContent = todos.length
-        ? `${done} of ${todos.length} completed`
-        : '';
-
+      stats.textContent = todos.length ? `${done} of ${todos.length} completed` : '';
       empty.style.display = todos.length ? 'none' : 'block';
 
       list.innerHTML = todos.map(t => `
@@ -209,7 +195,7 @@
       if (e.key === 'Enter') addTodo();
     });
 
-    load();
+    render();
   </script>
 </body>
 </html>
