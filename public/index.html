@@ -21,7 +21,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
       width: 100%;
-      max-width: 480px;
+      max-width: 500px;
       padding: 32px;
       height: fit-content;
     }
@@ -36,7 +36,7 @@
     .input-row {
       display: flex;
       gap: 8px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     input[type="text"] {
@@ -66,11 +66,50 @@
 
     button.add-btn:hover { background: #5a67d8; }
 
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
     .stats {
       font-size: 0.8rem;
       color: #718096;
-      margin-bottom: 12px;
     }
+
+    .filters {
+      display: flex;
+      gap: 4px;
+    }
+
+    .filter-btn {
+      background: none;
+      border: 1.5px solid transparent;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      color: #718096;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover { border-color: #667eea; color: #667eea; }
+    .filter-btn.active { border-color: #667eea; color: #667eea; font-weight: 600; }
+
+    #clear-btn {
+      background: none;
+      border: none;
+      font-size: 0.8rem;
+      color: #a0aec0;
+      cursor: pointer;
+      padding: 4px 0;
+      transition: color 0.15s;
+    }
+
+    #clear-btn:hover { color: #e53e3e; }
 
     ul { list-style: none; }
 
@@ -97,11 +136,21 @@
       font-size: 0.95rem;
       color: #2d3748;
       word-break: break-word;
+      cursor: text;
     }
 
     li.completed span {
       text-decoration: line-through;
       color: #a0aec0;
+    }
+
+    li .edit-input {
+      flex: 1;
+      border: 1.5px solid #667eea;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.95rem;
+      outline: none;
     }
 
     li button.delete-btn {
@@ -124,78 +173,39 @@
       font-size: 0.9rem;
       padding: 32px 0;
     }
+
+    .hint {
+      text-align: center;
+      color: #cbd5e0;
+      font-size: 0.75rem;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>dmd1</h1>
+
     <div class="input-row">
       <input type="text" id="todo-input" placeholder="What needs to be done?" />
       <button class="add-btn" onclick="addTodo()">Add</button>
     </div>
-    <div class="stats" id="stats"></div>
+
+    <div class="toolbar">
+      <span class="stats" id="stats"></span>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" data-filter="active" onclick="setFilter('active')">Active</button>
+        <button class="filter-btn" data-filter="completed" onclick="setFilter('completed')">Completed</button>
+      </div>
+      <button id="clear-btn" onclick="clearCompleted()" style="display:none">Clear completed</button>
+    </div>
+
     <ul id="todo-list"></ul>
-    <p class="empty" id="empty-msg" style="display:none">No todos yet. Add one above!</p>
+    <p class="empty" id="empty-msg" style="display:none">Nothing here yet!</p>
+    <p class="hint">Double-click a todo to edit it</p>
   </div>
 
-  <script>
-    const STORAGE_KEY = 'datameshdemo-todos';
-
-    let todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    let nextId = todos.length ? Math.max(...todos.map(t => t.id)) + 1 : 1;
-
-    function save() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-    }
-
-    function addTodo() {
-      const input = document.getElementById('todo-input');
-      const text = input.value.trim();
-      if (!text) return;
-      todos.push({ id: nextId++, text, completed: false });
-      input.value = '';
-      save();
-      render();
-    }
-
-    function toggleTodo(id) {
-      const todo = todos.find(t => t.id === id);
-      if (todo) { todo.completed = !todo.completed; save(); render(); }
-    }
-
-    function deleteTodo(id) {
-      todos = todos.filter(t => t.id !== id);
-      save();
-      render();
-    }
-
-    function render() {
-      const list = document.getElementById('todo-list');
-      const empty = document.getElementById('empty-msg');
-      const stats = document.getElementById('stats');
-
-      const done = todos.filter(t => t.completed).length;
-      stats.textContent = todos.length ? `${done} of ${todos.length} completed` : '';
-      empty.style.display = todos.length ? 'none' : 'block';
-
-      list.innerHTML = todos.map(t => `
-        <li class="${t.completed ? 'completed' : ''}">
-          <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTodo(${t.id})" />
-          <span>${escapeHtml(t.text)}</span>
-          <button class="delete-btn" onclick="deleteTodo(${t.id})" title="Delete">&#x2715;</button>
-        </li>
-      `).join('');
-    }
-
-    function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    }
-
-    document.getElementById('todo-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') addTodo();
-    });
-
-    render();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
