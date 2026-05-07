@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Mesh &amp; Data Fabric — Modern Data Architecture</title>
+  <style>
+    /* ── Reset & tokens ────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #000000;
+      --near-black: #0a0a0a;
+      --dark:    #1d1d1f;
+      --gray:    #6e6e73;
+      --light:   #f5f5f7;
+      --white:   #ffffff;
+      --blue:    #0071e3;
+      --blue-dk: #0058b8;
+      --purple:  #bf5af2;
+      --cyan:    #32ade6;
+      --green:   #30d158;
+      --orange:  #ff9f0a;
+      --red:     #ff375f;
+      --font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      --mono: "SF Mono", "Menlo", "Monaco", monospace;
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--black);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── Utility ───────────────────────────────────────────────── */
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 18px;
+    }
+    .eyebrow.purple { color: var(--purple); }
+
+    h2.display {
+      font-size: clamp(40px, 5.5vw, 68px);
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 22px;
+    }
+    h2.display.dark { color: var(--dark); }
+
+    .body-copy {
+      font-size: 18px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.65);
+      max-width: 560px;
+    }
+    .body-copy.dark { color: var(--gray); }
+
+    .inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 44px;
+    }
+
+    /* ── Scroll reveal ────────────────────────────────────────── */
+    .reveal, .reveal-l, .reveal-r {
+      opacity: 0;
+      transition: opacity 0.85s var(--ease), transform 0.85s var(--ease);
+    }
+    .reveal         { transform: translateY(44px); }
+    .reveal-l       { transform: translateX(-44px); }
+    .reveal-r       { transform: translateX(44px); }
+    .reveal.in, .reveal-l.in, .reveal-r.in {
+      opacity: 1; transform: translate(0);
+    }
+    .d1 { transition-delay: 0.10s; }
+    .d2 { transition-delay: 0.20s; }
+    .d3 { transition-delay: 0.30s; }
+    .d4 { transition-delay: 0.40s; }
+
+    /* ── Navigation ───────────────────────────────────────────── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      height: 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 22px;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: saturate(180%) blur(24px);
+      -webkit-backdrop-filter: saturate(180%) blur(24px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    #nav .brand {
+      font-size: 17px; font-weight: 600; letter-spacing: -0.3px;
+      color: var(--white); text-decoration: none;
+    }
+    #nav .brand em { color: var(--blue); font-style: normal; }
+    #nav ul { list-style: none; display: flex; gap: 28px; }
+    #nav ul a {
+      font-size: 13px; color: rgba(255,255,255,0.65);
+      text-decoration: none; transition: color 0.18s;
+    }
+    #nav ul a:hover { color: var(--white); }
+
+    /* ── Hero ─────────────────────────────────────────────────── */
+    #hero {
+      position: relative; height: 100vh; overflow: hidden;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: var(--black);
+    }
+    #hero-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+    }
+    .hero-body {
+      position: relative; z-index: 2;
+      text-align: center; padding: 0 20px;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--blue);
+      border: 1px solid rgba(0,113,227,0.4);
+      border-radius: 980px; padding: 6px 16px;
+      margin-bottom: 28px;
+      opacity: 0; animation: fadeUp 0.7s 0.2s forwards;
+    }
+    .hero-h1 {
+      font-size: clamp(52px, 8vw, 112px);
+      font-weight: 700; letter-spacing: -4px; line-height: 1.0;
+      background: linear-gradient(160deg, #fff 40%, rgba(255,255,255,0.45) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 26px;
+      opacity: 0; animation: fadeUp 0.7s 0.4s forwards;
+    }
+    .hero-sub {
+      font-size: clamp(17px, 2.2vw, 22px); font-weight: 400;
+      color: rgba(255,255,255,0.55); line-height: 1.55;
+      max-width: 580px; margin: 0 auto 40px;
+      opacity: 0; animation: fadeUp 0.7s 0.6s forwards;
+    }
+    .hero-btns {
+      display: flex; gap: 14px; justify-content: center;
+      opacity: 0; animation: fadeUp 0.7s 0.8s forwards;
+    }
+    .btn-p, .btn-s {
+      padding: 13px 26px; border-radius: 980px;
+      font-size: 15px; font-weight: 500; cursor: pointer;
+      font-family: var(--font); transition: all 0.18s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-p { background: var(--blue); color: #fff; border: none; }
+    .btn-p:hover { background: var(--blue-dk); transform: scale(1.02); }
+    .btn-s {
+      background: transparent; color: var(--blue);
+      border: 1.5px solid rgba(0,113,227,0.45);
+    }
+    .btn-s:hover { background: rgba(0,113,227,0.12); border-color: var(--blue); }
+
+    .scroll-cue {
+      position: absolute; bottom: 36px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      opacity: 0; animation: fadeIn 1s 1.4s forwards; cursor: pointer;
+    }
+    .scroll-cue span {
+      font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+    .scroll-chevron {
+      width: 18px; height: 18px;
+      border-right: 2px solid rgba(255,255,255,0.3);
+      border-bottom: 2px solid rgba(255,255,255,0.3);
+      transform: rotate(45deg);
+      animation: chevron 1.6s ease-in-out infinite;
+    }
+
+    /* ── Tagline strip ────────────────────────────────────────── */
+    #tagline {
+      background: var(--light);
+      padding: 120px 44px 100px;
+      text-align: center;
+    }
+    .tagline-big {
+      font-size: clamp(34px, 5vw, 72px);
+      font-weight: 700; letter-spacing: -2px; line-height: 1.1;
+      color: var(--dark); max-width: 860px; margin: 0 auto 72px;
+    }
+    .tagline-big .hi { color: var(--blue); }
+
+    .stats {
+      display: flex; justify-content: center; gap: 72px; flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-n {
+      font-size: 60px; font-weight: 700; letter-spacing: -2px;
+      line-height: 1; color: var(--dark);
+    }
+    .stat-n .su { font-size: 34px; color: var(--blue); }
+    .stat-l { font-size: 14px; color: var(--gray); margin-top: 6px; }
+
+    /* ── Data Mesh section ────────────────────────────────────── */
+    #mesh-section {
+      background: var(--near-black);
+      padding: 120px 0;
+    }
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+    }
+    .canvas-frame {
+      width: 100%; border-radius: 20px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.07);
+      display: block;
+    }
+
+    /* ── Principles ───────────────────────────────────────────── */
+    #principles {
+      background: var(--light);
+      padding: 120px 44px;
+    }
+    .section-head { text-align: center; margin-bottom: 72px; }
+    .section-head .body-copy { margin: 0 auto; text-align: center; }
+
+    .grid4 {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 22px; max-width: 980px; margin: 0 auto;
+    }
+    .p-card {
+      background: var(--white); border-radius: 20px;
+      padding: 40px 38px;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.06);
+      transition: transform 0.3s var(--ease), box-shadow 0.3s;
+    }
+    .p-card:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0,0,0,0.11); }
+    .p-icon {
+      width: 54px; height: 54px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin-bottom: 22px;
+    }
+    .p-num {
+      font-size: 12px; font-weight: 600; letter-spacing: 1.5px;
+      color: var(--blue); margin-bottom: 10px;
+    }
+    .p-title {
+      font-size: 21px; font-weight: 700; letter-spacing: -0.5px;
+      color: var(--dark); margin-bottom: 12px;
+    }
+    .p-desc { font-size: 14px; line-height: 1.65; color: var(--gray); }
+
+    /* ── Data Fabric ──────────────────────────────────────────── */
+    #fabric-section {
+      background: #050508;
+      padding: 120px 0;
+    }
+    .fabric-features { display: flex; flex-direction: column; gap: 26px; margin-top: 44px; }
+    .ff { display: flex; gap: 14px; align-items: flex-start; }
+    .ff-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--purple); margin-top: 8px; flex-shrink: 0;
+    }
+    .ff-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .ff-desc { font-size: 14px; color: rgba(255,255,255,0.48); line-height: 1.55; }
+
+    /* ── Comparison ───────────────────────────────────────────── */
+    #comparison {
+      background: var(--light);
+      padding: 120px 44px;
+    }
+    .cmp-table {
+      max-width: 880px; margin: 0 auto;
+      background: var(--white); border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 2px 40px rgba(0,0,0,0.07);
+    }
+    .cmp-head {
+      display: grid; grid-template-columns: 2fr 1fr 1fr;
+      background: var(--dark); color: var(--white);
+      padding: 22px 32px; font-size: 15px; font-weight: 600;
+    }
+    .cmp-head .mc { color: var(--blue); }
+    .cmp-head .fc { color: var(--purple); }
+    .cmp-row {
+      display: grid; grid-template-columns: 2fr 1fr 1fr;
+      padding: 18px 32px;
+      border-bottom: 1px solid rgba(0,0,0,0.055);
+      font-size: 14px; align-items: center;
+      transition: background 0.15s;
+    }
+    .cmp-row:hover { background: rgba(0,0,0,0.018); }
+    .cmp-row:last-child { border-bottom: none; }
+    .cmp-row .feat { color: var(--dark); font-weight: 500; }
+    .cmp-row .note { color: #888; font-size: 13px; }
+    .chk { font-size: 13px; }
+    .chk.y { color: #1a8c3e; }
+    .chk.n { color: #aaa; }
+    .chk.p { color: var(--orange); }
+
+    /* ── Live Demo ────────────────────────────────────────────── */
+    #live-demo {
+      background: var(--near-black);
+      padding: 120px 0;
+    }
+    .demo-hd { text-align: center; margin-bottom: 56px; }
+    .demo-hd .body-copy { margin: 0 auto; text-align: center; }
+
+    #demo-canvas {
+      width: 100%; height: 520px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.018);
+      border: 1px solid rgba(255,255,255,0.07);
+      cursor: default;
+      display: block;
+    }
+    .demo-controls {
+      display: flex; gap: 12px; justify-content: center;
+      margin-top: 28px; flex-wrap: wrap;
+    }
+    .d-btn {
+      padding: 9px 20px; border-radius: 980px;
+      border: 1.5px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.75);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; font-family: var(--font);
+      transition: all 0.18s;
+    }
+    .d-btn:hover { background: rgba(255,255,255,0.1); color: var(--white); border-color: rgba(255,255,255,0.3); }
+    .d-btn.pulse-anim { animation: btnPulse 0.4s; }
+
+    .event-log {
+      margin-top: 20px; padding: 16px 20px;
+      background: rgba(255,255,255,0.025);
+      border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);
+      height: 110px; overflow-y: auto;
+      font-family: var(--mono); font-size: 11.5px;
+    }
+    .log-l { padding: 2px 0; animation: fadeIn 0.25s; line-height: 1.5; }
+    .log-l.info   { color: rgba(255,255,255,0.38); }
+    .log-l.event  { color: var(--orange); }
+    .log-l.fabric { color: var(--purple); }
+    .log-l.ok     { color: var(--green); }
+    .event-log::-webkit-scrollbar { width: 4px; }
+    .event-log::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    /* ── Architecture ─────────────────────────────────────────── */
+    #architecture {
+      background: var(--light);
+      padding: 120px 44px;
+    }
+    .arch-box {
+      max-width: 860px; margin: 0 auto;
+      background: var(--white); border-radius: 24px;
+      padding: 60px; box-shadow: 0 2px 40px rgba(0,0,0,0.07);
+    }
+    .arch-canvas-wrap { width: 100%; }
+    #arch-canvas { width: 100%; display: block; }
+
+    /* ── CTA ──────────────────────────────────────────────────── */
+    #cta {
+      background: linear-gradient(175deg, #050510 0%, #0a0a1e 100%);
+      padding: 160px 44px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    #cta-canvas {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      opacity: 0.5;
+    }
+    .cta-body { position: relative; z-index: 2; }
+    .cta-h2 {
+      font-size: clamp(44px, 6vw, 80px);
+      font-weight: 700; letter-spacing: -2.5px; line-height: 1.04;
+      background: linear-gradient(155deg, #fff 30%, rgba(255,255,255,0.5) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 22px;
+    }
+    .cta-sub {
+      font-size: 19px; color: rgba(255,255,255,0.48); line-height: 1.6;
+      max-width: 520px; margin: 0 auto 48px;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    footer {
+      background: #111113;
+      padding: 44px;
+      text-align: center;
+      font-size: 12px; color: rgba(255,255,255,0.3);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    footer a { color: var(--blue); text-decoration: none; }
+
+    /* ── Keyframes ────────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+    @keyframes chevron {
+      0%,100% { opacity: 0.4; transform: rotate(45deg) translateY(0); }
+      50%      { opacity: 0.9; transform: rotate(45deg) translateY(5px); }
+    }
+    @keyframes btnPulse {
+      0%  { transform: scale(1); }
+      40% { transform: scale(0.94); }
+      100%{ transform: scale(1); }
+    }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .two-col, .grid4 { grid-template-columns: 1fr; }
+      .cmp-head, .cmp-row { grid-template-columns: 1fr 1fr; }
+      .cmp-head > :first-child, .cmp-row > :first-child { grid-column: 1 / -1; margin-bottom: 4px; }
+      .stats { gap: 40px; }
+      #nav ul { display: none; }
+      .inner { padding: 0 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────────────────────────────── -->
+<nav id="nav">
+  <a class="brand" href="#hero">data<em>mesh</em> &amp; fabric</a>
+  <ul>
+    <li><a href="#mesh-section">Data Mesh</a></li>
+    <li><a href="#fabric-section">Data Fabric</a></li>
+    <li><a href="#comparison">Compare</a></li>
+    <li><a href="#live-demo">Live Demo</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────────── -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-body">
+    <div class="hero-tag">Modern Data Architecture</div>
+    <h1 class="hero-h1">Data Mesh<br>&amp; Data Fabric</h1>
+    <p class="hero-sub">Two paradigms. One future. Decentralize ownership, unify intelligence, and scale your data organization without limits.</p>
+    <div class="hero-btns">
+      <a class="btn-p" href="#mesh-section">Explore Architecture</a>
+      <a class="btn-s" href="#live-demo">Live Demo</a>
+    </div>
+  </div>
+  <div class="scroll-cue" onclick="smoothTo('tagline')">
+    <span>Scroll</span>
+    <div class="scroll-chevron"></div>
+  </div>
+</section>
+
+<!-- ── TAGLINE ───────────────────────────────────────────────────── -->
+<section id="tagline">
+  <div class="tagline-big reveal">
+    Decentralize ownership.<br>
+    <span class="hi">Unify intelligence.</span><br>
+    Scale without limits.
+  </div>
+  <div class="stats">
+    <div class="stat reveal d1">
+      <div class="stat-n"><span class="cnt" data-to="10">0</span><span class="su">x</span></div>
+      <div class="stat-l">Faster data discovery</div>
+    </div>
+    <div class="stat reveal d2">
+      <div class="stat-n"><span class="cnt" data-to="99">0</span><span class="su">%</span></div>
+      <div class="stat-l">Data product availability SLA</div>
+    </div>
+    <div class="stat reveal d3">
+      <div class="stat-n"><span class="cnt" data-to="4">0</span></div>
+      <div class="stat-l">Foundational mesh principles</div>
+    </div>
+    <div class="stat reveal d4">
+      <div class="stat-n"><span class="cnt" data-to="360">0</span><span class="su">°</span></div>
+      <div class="stat-l">Unified data view</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DATA MESH ─────────────────────────────────────────────────── -->
+<section id="mesh-section">
+  <div class="inner">
+    <div class="two-col">
+      <div class="reveal-l">
+        <p class="eyebrow">Data Mesh</p>
+        <h2 class="display">Decentralized<br>by design.</h2>
+        <p class="body-copy">Data Mesh shifts ownership to the domain teams that understand their data best. Each domain publishes its own data products with SLAs, schemas, and accountability — no central bottlenecks.</p>
+        <p class="body-copy" style="margin-top:18px">This sociotechnical paradigm lets hundreds of teams produce and consume data independently, yet coherently, through a self-serve infrastructure platform.</p>
+      </div>
+      <div class="reveal-r">
+        <canvas id="mesh-canvas" class="canvas-frame" height="480"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRINCIPLES ────────────────────────────────────────────────── -->
+<section id="principles">
+  <div class="section-head reveal">
+    <p class="eyebrow">Four Core Principles</p>
+    <h2 class="display dark">The pillars of Data Mesh.</h2>
+    <p class="body-copy dark">Every architectural decision in a Data Mesh traces back to these four foundational ideas.</p>
+  </div>
+  <div class="grid4">
+    <div class="p-card reveal d1">
+      <div class="p-icon" style="background:rgba(0,113,227,0.09)">🏢</div>
+      <div class="p-num">01 — Principle</div>
+      <div class="p-title">Domain Ownership</div>
+      <p class="p-desc">Data is owned and served by the domain that produces it. The Orders team owns order data. No hand-offs to a central data team. Accountability lives closest to the source.</p>
+    </div>
+    <div class="p-card reveal d2">
+      <div class="p-icon" style="background:rgba(48,209,88,0.09)">📦</div>
+      <div class="p-num">02 — Principle</div>
+      <div class="p-title">Data as a Product</div>
+      <p class="p-desc">Each domain exposes data products with discoverable schemas, documented SLAs, and clear ownership. Consumers can trust what they consume — it's treated like a first-class product.</p>
+    </div>
+    <div class="p-card reveal d3">
+      <div class="p-icon" style="background:rgba(255,159,10,0.09)">⚙️</div>
+      <div class="p-num">03 — Principle</div>
+      <div class="p-title">Self-Serve Platform</div>
+      <p class="p-desc">A shared platform layer provides storage, pipelines, and catalogs as reusable primitives — so domain teams can ship data products without bottlenecking on central engineering.</p>
+    </div>
+    <div class="p-card reveal d4">
+      <div class="p-icon" style="background:rgba(191,90,242,0.09)">⚖️</div>
+      <div class="p-num">04 — Principle</div>
+      <div class="p-title">Federated Governance</div>
+      <p class="p-desc">Global policies on privacy, quality, and compliance are enforced through automated guardrails — while each domain retains full autonomy over how it models its own data.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── DATA FABRIC ───────────────────────────────────────────────── -->
+<section id="fabric-section">
+  <div class="inner">
+    <div class="two-col">
+      <div class="reveal-l">
+        <canvas id="fabric-canvas" class="canvas-frame" height="480"></canvas>
+      </div>
+      <div class="reveal-r">
+        <p class="eyebrow purple">Data Fabric</p>
+        <h2 class="display">Intelligence<br>woven through<br>everything.</h2>
+        <p class="body-copy">Data Fabric is an automated, AI-driven architecture that connects all your data — wherever it lives. It uses active metadata and machine learning to continuously discover, integrate, and govern data across hybrid environments.</p>
+        <div class="fabric-features">
+          <div class="ff">
+            <div class="ff-dot"></div>
+            <div>
+              <div class="ff-title">Active Metadata</div>
+              <div class="ff-desc">Continuously crawls, profiles, and enriches your data landscape — proactively recommending next actions.</div>
+            </div>
+          </div>
+          <div class="ff">
+            <div class="ff-dot"></div>
+            <div>
+              <div class="ff-title">Automated Integration</div>
+              <div class="ff-desc">AI discovers relationships and auto-builds pipelines across heterogeneous sources without manual wiring.</div>
+            </div>
+          </div>
+          <div class="ff">
+            <div class="ff-dot"></div>
+            <div>
+              <div class="ff-title">Knowledge Graph</div>
+              <div class="ff-desc">A living graph maps all assets, lineage, ownership, and usage — powering intelligent search and impact analysis.</div>
+            </div>
+          </div>
+          <div class="ff">
+            <div class="ff-dot"></div>
+            <div>
+              <div class="ff-title">Unified Governance</div>
+              <div class="ff-desc">Policies automatically propagate across cloud, on-prem, and edge environments in real time.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMPARISON ────────────────────────────────────────────────── -->
+<section id="comparison">
+  <div class="section-head reveal">
+    <p class="eyebrow">Side by Side</p>
+    <h2 class="display dark">Mesh vs. Fabric.</h2>
+    <p class="body-copy dark" style="margin:0 auto;text-align:center">Two different lenses. Understanding both lets you choose the right approach — or combine them for maximum impact.</p>
+  </div>
+  <div class="cmp-table reveal">
+    <div class="cmp-head">
+      <div>Capability</div>
+      <div class="mc">Data Mesh</div>
+      <div class="fc">Data Fabric</div>
+    </div>
+    <div class="cmp-row"><div class="feat">Primary focus</div><div class="note">Organizational structure</div><div class="note">Technical integration</div></div>
+    <div class="cmp-row"><div class="feat">Decentralized ownership</div><div class="chk y">✓ Core principle</div><div class="chk p">~ Optional</div></div>
+    <div class="cmp-row"><div class="feat">AI-driven automation</div><div class="chk n">○ Out of scope</div><div class="chk y">✓ Core feature</div></div>
+    <div class="cmp-row"><div class="feat">Works with existing systems</div><div class="chk p">~ With migration</div><div class="chk y">✓ By design</div></div>
+    <div class="cmp-row"><div class="feat">Domain team autonomy</div><div class="chk y">✓ Required</div><div class="chk p">~ Centrally controlled</div></div>
+    <div class="cmp-row"><div class="feat">Real-time data products</div><div class="chk y">✓ Supported</div><div class="chk y">✓ Supported</div></div>
+    <div class="cmp-row"><div class="feat">Metadata intelligence</div><div class="chk p">~ Manual curation</div><div class="chk y">✓ Automated</div></div>
+    <div class="cmp-row"><div class="feat">Scales with org size</div><div class="chk y">✓ Designed for it</div><div class="chk p">~ Technically scalable</div></div>
+    <div class="cmp-row"><div class="feat">Lineage & observability</div><div class="chk p">~ Per-domain</div><div class="chk y">✓ End-to-end</div></div>
+  </div>
+</section>
+
+<!-- ── LIVE DEMO ─────────────────────────────────────────────────── -->
+<section id="live-demo">
+  <div class="inner">
+    <div class="demo-hd reveal">
+      <p class="eyebrow">Interactive Demonstration</p>
+      <h2 class="display">Watch data flow live.</h2>
+      <p class="body-copy" style="margin:0 auto;text-align:center">Trigger real domain events and watch them propagate through the mesh, processed by the fabric intelligence layer.</p>
+    </div>
+    <canvas id="demo-canvas" class="reveal"></canvas>
+    <div class="demo-controls reveal">
+      <button class="d-btn" onclick="trigger('order')">📦 Place Order</button>
+      <button class="d-btn" onclick="trigger('customer')">👤 Update Customer</button>
+      <button class="d-btn" onclick="trigger('inventory')">🏭 Inventory Alert</button>
+      <button class="d-btn" onclick="trigger('analytics')">📊 Cross-Domain Query</button>
+      <button class="d-btn" onclick="trigger('fabric')">🔮 Fabric Metadata Scan</button>
+    </div>
+    <div class="event-log reveal" id="elog">
+      <div class="log-l info">[system]  Data Mesh topology online — 5 domains registered</div>
+      <div class="log-l fabric">[fabric]  Active metadata scan complete — 47 data products cataloged</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ARCHITECTURE ──────────────────────────────────────────────── -->
+<section id="architecture">
+  <div class="section-head reveal">
+    <p class="eyebrow">Architecture Overview</p>
+    <h2 class="display dark">Mesh + Fabric together.</h2>
+    <p class="body-copy dark" style="margin:0 auto;text-align:center">Mesh provides the organizational structure; Fabric provides the intelligence. Combined they form a complete modern data platform.</p>
+  </div>
+  <div class="arch-box reveal">
+    <div class="arch-canvas-wrap">
+      <canvas id="arch-canvas" height="420"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ──────────────────────────────────────────────────────── -->
+<section id="cta">
+  <canvas id="cta-canvas"></canvas>
+  <div class="cta-body reveal">
+    <h2 class="cta-h2">Better together.</h2>
+    <p class="cta-sub">Mesh brings the right organizational model. Fabric brings the intelligence layer. Together they form a data platform that scales with your organization and adapts with your data.</p>
+    <div class="hero-btns" style="justify-content:center">
+      <a class="btn-p" href="https://martinfowler.com/articles/data-mesh-principles.html" target="_blank" rel="noopener">Read the Principles</a>
+      <a class="btn-s" href="#hero">Back to Top ↑</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────────────── -->
+<footer>
+  <p>Built on Data Mesh principles &mdash; <a href="https://martinfowler.com/articles/data-mesh-principles.html" target="_blank" rel="noopener">martinfowler.com/articles/data-mesh-principles.html</a> &mdash; datameshdemo &copy; 2025</p>
+</footer>
+
+<script>
+/* ================================================================
+   UTILITIES
+================================================================ */
+function smoothTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function raf(fn) { requestAnimationFrame(fn); }
+
+/* ================================================================
+   HERO CANVAS — Animated domain network
+================================================================ */
+(function heroCanvas() {
+  const cv = document.getElementById('hero-canvas');
+  const cx = cv.getContext('2d');
+  let W, H, nodes, packets;
+
+  const DOMAIN_NAMES = ['Orders','Customers','Inventory','Finance','Analytics','Logistics','Marketing','Payments'];
+  const DOMAIN_COLORS = ['#0071e3','#30d158','#ff9f0a','#bf5af2','#32ade6','#ff375f','#ffd60a','#64d2ff'];
+
+  function init() {
+    W = cv.width = innerWidth;
+    H = cv.height = innerHeight;
+    nodes = [];
+    packets = [];
+
+    DOMAIN_NAMES.forEach((name, i) => {
+      const a = (i / DOMAIN_NAMES.length) * Math.PI * 2 - Math.PI / 2;
+      const r = Math.min(W, H) * 0.28;
+      nodes.push({
+        x: W/2 + Math.cos(a)*r + (Math.random()-0.5)*60,
+        y: H/2 + Math.sin(a)*r + (Math.random()-0.5)*60,
+        vx: (Math.random()-0.5)*0.45,
+        vy: (Math.random()-0.5)*0.45,
+        r: 7, name,
+        color: DOMAIN_COLORS[i],
+        phase: Math.random()*Math.PI*2,
+        isDomain: true
+      });
+    });
+
+    for (let i = 0; i < 45; i++) {
+      nodes.push({
+        x: Math.random()*W, y: Math.random()*H,
+        vx: (Math.random()-0.5)*0.6, vy: (Math.random()-0.5)*0.6,
+        r: Math.random()*2.5+0.8,
+        color: 'rgba(0,113,227,0.7)',
+        phase: Math.random()*Math.PI*2,
+        isDomain: false
+      });
+    }
+  }
+
+  function spawnPacket() {
+    const doms = nodes.filter(n => n.isDomain);
+    const a = doms[Math.random()*doms.length|0];
+    const b = doms[Math.random()*doms.length|0];
+    if (a === b) return;
+    packets.push({ from:a, to:b, t:0, spd:0.006+Math.random()*0.009, color:a.color });
+  }
+
+  setInterval(spawnPacket, 700);
+
+  let t = 0;
+  function draw() {
+    cx.clearRect(0, 0, W, H);
+    t += 0.012;
+
+    const doms = nodes.filter(n => n.isDomain);
+
+    // Domain-to-domain edges
+    for (let i = 0; i < doms.length; i++) {
+      for (let j = i+1; j < doms.length; j++) {
+        const a = doms[i], b = doms[j];
+        const dx = a.x-b.x, dy = a.y-b.y;
+        const d = Math.hypot(dx, dy);
+        if (d < 380) {
+          cx.beginPath(); cx.moveTo(a.x,a.y); cx.lineTo(b.x,b.y);
+          cx.strokeStyle = `rgba(0,113,227,${0.04+(1-d/380)*0.07})`;
+          cx.lineWidth = 1; cx.stroke();
+        }
+      }
+    }
+
+    // Particle micro-edges
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].isDomain) continue;
+      for (let j = i+1; j < nodes.length; j++) {
+        if (nodes[j].isDomain) continue;
+        const dx = nodes[i].x-nodes[j].x, dy = nodes[i].y-nodes[j].y;
+        const d = Math.hypot(dx, dy);
+        if (d < 100) {
+          cx.beginPath(); cx.moveTo(nodes[i].x,nodes[i].y); cx.lineTo(nodes[j].x,nodes[j].y);
+          cx.strokeStyle = `rgba(255,255,255,${0.025*(1-d/100)})`;
+          cx.lineWidth = 0.5; cx.stroke();
+        }
+      }
+    }
+
+    // Packets
+    packets = packets.filter(p => p.t <= 1);
+    packets.forEach(p => {
+      p.t += p.spd;
+      for (let i = 0; i < 6; i++) {
+        const tt = Math.max(0, p.t - i*0.025);
+        const px = p.from.x + (p.to.x-p.from.x)*tt;
+        const py = p.from.y + (p.to.y-p.from.y)*tt;
+        cx.beginPath(); cx.arc(px, py, 3-i*0.4, 0, Math.PI*2);
+        cx.fillStyle = p.color + Math.round((1-i/6)*220).toString(16).padStart(2,'0');
+        cx.fill();
+      }
+    });
+
+    // Nodes
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy; n.phase += 0.018;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+
+      if (n.isDomain) {
+        const pulse = Math.sin(n.phase)*2.5;
+        // halo
+        const g = cx.createRadialGradient(n.x,n.y,0,n.x,n.y,42);
+        g.addColorStop(0, n.color+'33'); g.addColorStop(1,'transparent');
+        cx.beginPath(); cx.arc(n.x,n.y,42,0,Math.PI*2);
+        cx.fillStyle = g; cx.fill();
+        // dot
+        cx.beginPath(); cx.arc(n.x,n.y,n.r+pulse*0.3,0,Math.PI*2);
+        cx.fillStyle = n.color; cx.fill();
+        // label
+        cx.font = '11px -apple-system,sans-serif';
+        cx.fillStyle = 'rgba(255,255,255,0.65)';
+        cx.textAlign = 'center';
+        cx.fillText(n.name, n.x, n.y - n.r - 8);
+      } else {
+        cx.beginPath(); cx.arc(n.x,n.y,n.r,0,Math.PI*2);
+        cx.fillStyle = `rgba(255,255,255,${0.08+Math.sin(n.phase)*0.04})`;
+        cx.fill();
+      }
+    });
+
+    raf(draw);
+  }
+
+  init();
+  draw();
+  addEventListener('resize', init);
+})();
+
+/* ================================================================
+   MESH CANVAS — Domain topology with events
+================================================================ */
+(function meshCanvas() {
+  const cv = document.getElementById('mesh-canvas');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H;
+
+  const DOMS = [
+    { name:'Orders',    color:'#0071e3', events:['orders.placed','orders.shipped'] },
+    { name:'Customers', color:'#30d158', events:['customer.updated','profile.sync'] },
+    { name:'Inventory', color:'#ff9f0a', events:['stock.changed','stock.low'] },
+    { name:'Finance',   color:'#bf5af2', events:['payment.done','invoice.sent'] },
+    { name:'Analytics', color:'#32ade6', events:['report.ready'] },
+  ];
+
+  let pkts = [], t = 0;
+
+  function resize() {
+    const r = cv.getBoundingClientRect();
+    W = cv.width  = r.width  || 500;
+    H = cv.height = cv.getAttribute('height') || 480;
+  }
+
+  function pos(i, cx, cy, r) {
+    const a = (i/DOMS.length)*Math.PI*2 - Math.PI/2;
+    return { x: cx+Math.cos(a)*r, y: cy+Math.sin(a)*r };
+  }
+
+  setInterval(() => {
+    const i = Math.random()*DOMS.length|0;
+    let j = Math.random()*DOMS.length|0;
+    if (i === j) return;
+    const cp = { x: W/2, y: H/2 };
+    const r  = Math.min(W,H)*0.34;
+    const fp = pos(i, W/2, H/2, r);
+    const tp = pos(j, W/2, H/2, r);
+    // Route via center platform half the time
+    if (Math.random() > 0.5) {
+      pkts.push({ pts:[fp,cp,tp], t:0, spd:0.007, color:DOMS[i].color,
+        label: DOMS[i].events[Math.random()*DOMS[i].events.length|0] });
+    } else {
+      pkts.push({ pts:[fp,tp], t:0, spd:0.009, color:DOMS[i].color,
+        label: DOMS[i].events[Math.random()*DOMS[i].events.length|0] });
+    }
+  }, 900);
+
+  function bezierAt(pts, t) {
+    if (pts.length === 2) {
+      return { x: pts[0].x+(pts[1].x-pts[0].x)*t, y: pts[0].y+(pts[1].y-pts[0].y)*t };
+    }
+    // quadratic through 3 pts
+    const t1 = 1-t;
+    return {
+      x: t1*t1*pts[0].x + 2*t1*t*pts[1].x + t*t*pts[2].x,
+      y: t1*t1*pts[0].y + 2*t1*t*pts[1].y + t*t*pts[2].y
+    };
+  }
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    t += 0.01;
+    const cX = W/2, cY = H/2;
+    const R  = Math.min(W,H)*0.34;
+
+    // Center platform halo
+    const g = cx.createRadialGradient(cX,cY,0,cX,cY,90);
+    g.addColorStop(0,'rgba(0,113,227,0.12)'); g.addColorStop(1,'transparent');
+    cx.beginPath(); cx.arc(cX,cY,90,0,Math.PI*2); cx.fillStyle=g; cx.fill();
+    cx.beginPath(); cx.arc(cX,cY,28,0,Math.PI*2);
+    cx.strokeStyle='rgba(0,113,227,0.35)'; cx.lineWidth=2; cx.stroke();
+    cx.font='bold 11px -apple-system,sans-serif';
+    cx.fillStyle='rgba(0,113,227,0.8)'; cx.textAlign='center';
+    cx.fillText('Platform', cX, cY+4);
+
+    // Spokes
+    DOMS.forEach((d,i) => {
+      const p = pos(i,cX,cY,R);
+      cx.beginPath(); cx.moveTo(p.x,p.y); cx.lineTo(cX,cY);
+      cx.strokeStyle=d.color+'1a'; cx.lineWidth=1.5;
+      cx.setLineDash([4,8]); cx.stroke(); cx.setLineDash([]);
+    });
+
+    // Packets
+    pkts = pkts.filter(p => p.t<=1);
+    pkts.forEach(p => {
+      p.t += p.spd;
+      for (let i=0;i<5;i++) {
+        const tt = Math.max(0, p.t-i*0.03);
+        const pt = bezierAt(p.pts, Math.min(1,tt));
+        cx.beginPath(); cx.arc(pt.x,pt.y,3-i*0.5,0,Math.PI*2);
+        cx.fillStyle = p.color+Math.round((1-i/5)*200).toString(16).padStart(2,'0');
+        cx.fill();
+      }
+      if (p.t < 0.5) {
+        const pt = bezierAt(p.pts, p.t);
+        cx.font='9px "SF Mono",monospace';
+        cx.fillStyle=p.color+'bb'; cx.textAlign='center';
+        cx.fillText(p.label, pt.x, pt.y-9);
+      }
+    });
+
+    // Domain nodes
+    DOMS.forEach((d,i) => {
+      const p = pos(i,cX,cY,R);
+      const pulse = Math.sin(t+i*0.8)*2;
+      const halo = cx.createRadialGradient(p.x,p.y,0,p.x,p.y,38);
+      halo.addColorStop(0,d.color+'44'); halo.addColorStop(1,'transparent');
+      cx.beginPath(); cx.arc(p.x,p.y,38,0,Math.PI*2); cx.fillStyle=halo; cx.fill();
+      cx.beginPath(); cx.arc(p.x,p.y,22+pulse*0.25,0,Math.PI*2);
+      cx.fillStyle=d.color+'22'; cx.fill();
+      cx.beginPath(); cx.arc(p.x,p.y,20,0,Math.PI*2);
+      cx.strokeStyle=d.color; cx.lineWidth=2; cx.stroke();
+      cx.font='bold 11px -apple-system,sans-serif';
+      cx.fillStyle='rgba(255,255,255,0.88)'; cx.textAlign='center';
+      cx.fillText(d.name,p.x,p.y+4);
+
+      // event labels orbit
+      d.events.forEach((ev,ei) => {
+        const a  = (i/DOMS.length)*Math.PI*2 - Math.PI/2;
+        const da = (ei-(d.events.length-1)/2)*0.18;
+        const lr = R*1.42;
+        cx.font='8px "SF Mono",monospace';
+        cx.fillStyle=d.color+'77'; cx.textAlign='center';
+        cx.fillText(ev,
+          cX+Math.cos(a+da)*lr,
+          cY+Math.sin(a+da)*lr);
+      });
+    });
+
+    raf(draw);
+  }
+
+  resize();
+  draw();
+  new ResizeObserver(resize).observe(cv);
+})();
+
+/* ================================================================
+   FABRIC CANVAS — Weaving intelligence
+================================================================ */
+(function fabricCanvas() {
+  const cv = document.getElementById('fabric-canvas');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H, nodes;
+  const LABELS = ['Database','Data Lake','API','Stream','Files','Warehouse','SaaS','IoT','Kafka','S3'];
+  let t = 0, scanX = 0;
+
+  function resize() {
+    const r = cv.getBoundingClientRect();
+    W = cv.width  = r.width  || 500;
+    H = cv.height = cv.getAttribute('height') || 480;
+    nodes = Array.from({length:18}, (_,i) => ({
+      x: Math.random()*W, y: Math.random()*H,
+      vx: (Math.random()-0.5)*0.38, vy: (Math.random()-0.5)*0.38,
+      r: Math.random()*3.5+2,
+      hue: 255+Math.random()*60,
+      phase: Math.random()*Math.PI*2,
+      label: LABELS[i%LABELS.length]
+    }));
+  }
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    t += 0.01;
+    scanX = (scanX+1.8)%W;
+
+    // Woven edges
+    for (let i=0;i<nodes.length;i++) {
+      for (let j=i+1;j<nodes.length;j++) {
+        const a=nodes[i], b=nodes[j];
+        const d = Math.hypot(a.x-b.x,a.y-b.y);
+        if (d > 190) continue;
+        const str = 1-d/190;
+        const segs = 8;
+        cx.beginPath(); cx.moveTo(a.x,a.y);
+        for (let s=1;s<=segs;s++) {
+          const st = s/segs;
+          const mx = a.x+(b.x-a.x)*st, my = a.y+(b.y-a.y)*st;
+          const wave = Math.sin(t*2+st*Math.PI*3+i+j)*3.5*str;
+          const px = -(b.y-a.y)/d, py = (b.x-a.x)/d;
+          cx.lineTo(mx+px*wave, my+py*wave);
+        }
+        const hue = (a.hue+b.hue)/2;
+        cx.strokeStyle = `hsla(${hue},65%,62%,${str*0.3})`;
+        cx.lineWidth = str*2; cx.stroke();
+      }
+    }
+
+    // Scan beam
+    const beam = cx.createLinearGradient(scanX-50,0,scanX+50,0);
+    beam.addColorStop(0,'transparent');
+    beam.addColorStop(0.5,'rgba(191,90,242,0.14)');
+    beam.addColorStop(1,'transparent');
+    cx.fillStyle=beam; cx.fillRect(scanX-50,0,100,H);
+
+    // Nodes
+    nodes.forEach(n => {
+      n.x+=n.vx; n.y+=n.vy; n.phase+=0.018;
+      if(n.x<0||n.x>W) n.vx*=-1;
+      if(n.y<0||n.y>H) n.vy*=-1;
+      const near = Math.abs(n.x-scanX)<55;
+      if (near) {
+        const g=cx.createRadialGradient(n.x,n.y,0,n.x,n.y,32);
+        g.addColorStop(0,`hsla(${n.hue},80%,70%,0.45)`); g.addColorStop(1,'transparent');
+        cx.beginPath(); cx.arc(n.x,n.y,32,0,Math.PI*2); cx.fillStyle=g; cx.fill();
+      }
+      cx.beginPath(); cx.arc(n.x,n.y,n.r+Math.sin(n.phase)*0.6,0,Math.PI*2);
+      cx.fillStyle = near
+        ? `hsla(${n.hue},85%,72%,0.95)`
+        : `hsla(${n.hue},60%,58%,0.55)`;
+      cx.fill();
+      cx.font='9px -apple-system,sans-serif';
+      cx.fillStyle = near?'rgba(255,255,255,0.88)':'rgba(255,255,255,0.35)';
+      cx.textAlign='center';
+      cx.fillText(n.label,n.x,n.y-n.r-5);
+    });
+
+    // Header label
+    cx.font='bold 12px -apple-system,sans-serif';
+    cx.fillStyle='rgba(191,90,242,0.55)'; cx.textAlign='center';
+    cx.fillText('Active Metadata Intelligence Layer',W/2,24);
+
+    raf(draw);
+  }
+
+  resize(); draw();
+  new ResizeObserver(resize).observe(cv);
+})();
+
+/* ================================================================
+   LIVE DEMO CANVAS
+================================================================ */
+const DNODES = [
+  { id:'orders',    name:'Orders',       color:'#0071e3', isCenter:false },
+  { id:'customers', name:'Customers',    color:'#30d158', isCenter:false },
+  { id:'inventory', name:'Inventory',    color:'#ff9f0a', isCenter:false },
+  { id:'finance',   name:'Finance',      color:'#bf5af2', isCenter:false },
+  { id:'analytics', name:'Analytics',    color:'#32ade6', isCenter:false },
+  { id:'fabric',    name:'Data Fabric',  color:'#ff375f', isCenter:true  },
+];
+
+let demoPkts = [];
+
+(function demoCanvas() {
+  const cv = document.getElementById('demo-canvas');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H, t=0;
+
+  function layout() {
+    const r = cv.getBoundingClientRect();
+    W = cv.width = r.width || 900;
+    H = cv.height = 520;
+    const cX=W/2, cY=H/2, R=Math.min(W,H)*0.36;
+    const nonCenter = DNODES.filter(n=>!n.isCenter);
+    nonCenter.forEach((n,i) => {
+      const a=(i/nonCenter.length)*Math.PI*2 - Math.PI/2;
+      n.x=cX+Math.cos(a)*R; n.y=cY+Math.sin(a)*R;
+    });
+    const fab = DNODES.find(n=>n.isCenter);
+    fab.x=cX; fab.y=cY;
+  }
+
+  function addPkt(fromId, toId, label, col) {
+    const f=DNODES.find(n=>n.id===fromId), t=DNODES.find(n=>n.id===toId);
+    if(!f||!t) return;
+    demoPkts.push({ f, t, t0:0, spd:0.013+Math.random()*0.007, label, color:col||f.color });
+  }
+  window._addPkt = addPkt;
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    t+=0.01;
+
+    // Grid
+    cx.strokeStyle='rgba(255,255,255,0.018)'; cx.lineWidth=1;
+    for(let x=0;x<W;x+=44){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke();}
+    for(let y=0;y<H;y+=44){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke();}
+
+    const fab=DNODES.find(n=>n.isCenter);
+
+    // Spokes
+    DNODES.filter(n=>!n.isCenter).forEach(n=>{
+      cx.beginPath(); cx.moveTo(n.x,n.y); cx.lineTo(fab.x,fab.y);
+      cx.strokeStyle='rgba(255,255,255,0.055)'; cx.lineWidth=1.5;
+      cx.setLineDash([6,12]); cx.stroke(); cx.setLineDash([]);
+    });
+
+    // Packets
+    demoPkts = demoPkts.filter(p=>p.t0<=1.15);
+    demoPkts.forEach(p=>{
+      p.t0+=p.spd;
+      const clamped=Math.min(1,p.t0);
+      for(let i=0;i<6;i++){
+        const tt=Math.max(0,clamped-i*0.028);
+        const px=p.f.x+(p.t.x-p.f.x)*tt;
+        const py=p.f.y+(p.t.y-p.f.y)*tt;
+        cx.beginPath(); cx.arc(px,py,3.5-i*0.5,0,Math.PI*2);
+        cx.fillStyle=p.color+Math.round((1-i/6)*230).toString(16).padStart(2,'0');
+        cx.fill();
+      }
+      if(p.t0<0.55){
+        const pt={x:p.f.x+(p.t.x-p.f.x)*p.t0, y:p.f.y+(p.t.y-p.f.y)*p.t0};
+        cx.font='9px "SF Mono",monospace';
+        cx.fillStyle=p.color; cx.textAlign='center';
+        cx.fillText(p.label,pt.x,pt.y-10);
+      }
+    });
+
+    // Nodes
+    DNODES.forEach(n=>{
+      const pulse=Math.sin(t*2+n.x*0.008)*3;
+      const sz = n.isCenter?48:34;
+      const g=cx.createRadialGradient(n.x,n.y,0,n.x,n.y,sz+22);
+      g.addColorStop(0,n.color+'44'); g.addColorStop(1,'transparent');
+      cx.beginPath(); cx.arc(n.x,n.y,sz+22,0,Math.PI*2); cx.fillStyle=g; cx.fill();
+      cx.beginPath(); cx.arc(n.x,n.y,sz+pulse*0.3,0,Math.PI*2);
+      cx.fillStyle=n.color+'20'; cx.fill();
+      cx.beginPath(); cx.arc(n.x,n.y,sz,0,Math.PI*2);
+      cx.strokeStyle=n.color; cx.lineWidth=n.isCenter?3:2; cx.stroke();
+      cx.font=`${n.isCenter?'bold 13':'12'}px -apple-system,sans-serif`;
+      cx.fillStyle='rgba(255,255,255,0.9)'; cx.textAlign='center';
+      cx.fillText(n.name,n.x,n.y+(n.isCenter?4:4));
+      if(n.isCenter){
+        cx.font='10px -apple-system,sans-serif';
+        cx.fillStyle='rgba(255,255,255,0.45)';
+        cx.fillText('Intelligence Layer',n.x,n.y+20);
+      }
+    });
+
+    raf(draw);
+  }
+
+  layout(); draw();
+  new ResizeObserver(layout).observe(cv);
+})();
+
+function appendLog(msg, cls) {
+  const log = document.getElementById('elog');
+  const d = document.createElement('div');
+  d.className='log-l '+cls;
+  const ts = new Date().toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  d.textContent = `[${ts}]  ${msg}`;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+
+function trigger(type) {
+  const btn = event.currentTarget;
+  btn.classList.add('pulse-anim');
+  setTimeout(()=>btn.classList.remove('pulse-anim'),400);
+
+  switch(type) {
+    case 'order':
+      _addPkt('orders','fabric','orders.placed');
+      setTimeout(()=>{ _addPkt('fabric','inventory','check-stock','#ff375f'); _addPkt('fabric','customers','validate','#ff375f'); },400);
+      setTimeout(()=>{ _addPkt('inventory','orders','stock-ok','#ff9f0a'); },900);
+      appendLog('[orders]  Event: orders.order.placed → fabric routing', 'event');
+      setTimeout(()=>appendLog('[fabric]  Routed to inventory + customers domains', 'fabric'),420);
+      setTimeout(()=>appendLog('[inventory]  Stock reservation confirmed ✓', 'ok'),950);
+      break;
+    case 'customer':
+      _addPkt('customers','fabric','customer.updated');
+      setTimeout(()=>{ _addPkt('fabric','analytics','profile-sync','#ff375f'); _addPkt('fabric','orders','pref-update','#ff375f'); },400);
+      appendLog('[customers]  Event: customers.customer.updated → fabric routing', 'event');
+      setTimeout(()=>appendLog('[fabric]  Syncing analytics + orders with new profile', 'fabric'),420);
+      setTimeout(()=>appendLog('[analytics]  Customer segment recalculated ✓', 'ok'),900);
+      break;
+    case 'inventory':
+      _addPkt('inventory','fabric','stock.low');
+      setTimeout(()=>{ _addPkt('fabric','orders','low-stock-alert','#ff375f'); _addPkt('fabric','analytics','metric-update','#ff375f'); },350);
+      appendLog('[inventory]  Alert: inventory.stock.low → critical path', 'event');
+      setTimeout(()=>appendLog('[fabric]  Critical event — alerting orders + analytics', 'fabric'),380);
+      setTimeout(()=>appendLog('[orders]  Low-stock notification enqueued for buyers ✓', 'ok'),850);
+      break;
+    case 'analytics':
+      _addPkt('analytics','fabric','query:revenue');
+      setTimeout(()=>{ _addPkt('fabric','orders','fetch-orders','#ff375f'); _addPkt('fabric','finance','fetch-financials','#ff375f'); },350);
+      setTimeout(()=>{ _addPkt('orders','analytics','order-data','#0071e3'); _addPkt('finance','analytics','finance-data','#bf5af2'); },850);
+      appendLog('[analytics]  Cross-domain query: revenue by customer segment', 'event');
+      setTimeout(()=>appendLog('[fabric]  Federating query → orders + finance domains', 'fabric'),380);
+      setTimeout(()=>appendLog('[analytics]  Report assembled from 2 domain products ✓', 'ok'),1100);
+      break;
+    case 'fabric':
+      DNODES.filter(n=>!n.isCenter).forEach((n,i)=>{
+        setTimeout(()=>_addPkt('fabric',n.id,'metadata-scan','#ff375f'),i*120);
+        setTimeout(()=>_addPkt(n.id,'fabric','asset-catalog',n.color),(i*120)+600);
+      });
+      appendLog('[fabric]  Active metadata scan initiated across all domains', 'fabric');
+      setTimeout(()=>appendLog('[fabric]  Discovered 8 new schema changes, 3 new tables', 'fabric'),900);
+      setTimeout(()=>appendLog('[fabric]  Knowledge graph: 47 → 58 cataloged assets ✓', 'ok'),1600);
+      break;
+  }
+}
+
+/* ================================================================
+   ARCHITECTURE CANVAS — static labeled diagram
+================================================================ */
+(function archCanvas() {
+  const cv = document.getElementById('arch-canvas');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H;
+
+  function resize() {
+    const r = cv.getBoundingClientRect();
+    W = cv.width = r.width || 740;
+    H = cv.height = 420;
+    draw();
+  }
+
+  function roundRect(x,y,w,h,r,fill,stroke,sw) {
+    cx.beginPath();
+    cx.moveTo(x+r,y);
+    cx.arcTo(x+w,y,x+w,y+h,r); cx.arcTo(x+w,y+h,x,y+h,r);
+    cx.arcTo(x,y+h,x,y,r);     cx.arcTo(x,y,x+w,y,r);
+    cx.closePath();
+    if(fill){cx.fillStyle=fill; cx.fill();}
+    if(stroke){cx.strokeStyle=stroke; cx.lineWidth=sw||1; cx.stroke();}
+  }
+
+  function arrow(x1,y1,x2,y2,col) {
+    cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(x2,y2);
+    cx.strokeStyle=col||'#aaa'; cx.lineWidth=1.5;
+    cx.setLineDash([5,6]); cx.stroke(); cx.setLineDash([]);
+    const a=Math.atan2(y2-y1,x2-x1);
+    cx.beginPath();
+    cx.moveTo(x2,y2);
+    cx.lineTo(x2-9*Math.cos(a-0.4),y2-9*Math.sin(a-0.4));
+    cx.lineTo(x2-9*Math.cos(a+0.4),y2-9*Math.sin(a+0.4));
+    cx.closePath(); cx.fillStyle=col||'#aaa'; cx.fill();
+  }
+
+  function label(txt,x,y,sz,col,bold) {
+    cx.font=`${bold?'bold ':''}${sz||13}px -apple-system,sans-serif`;
+    cx.fillStyle=col||'#1d1d1f'; cx.textAlign='center';
+    cx.fillText(txt,x,y);
+  }
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    const pad=40, domW=120, domH=52, row1Y=60, row2Y=200, fabricY=310;
+    const domains=[
+      {name:'Orders',    color:'#0071e3'},
+      {name:'Customers', color:'#30d158'},
+      {name:'Inventory', color:'#ff9f0a'},
+      {name:'Finance',   color:'#bf5af2'},
+      {name:'Analytics', color:'#32ade6'},
+    ];
+    const totalW = domains.length*(domW+20)-20;
+    const startX = (W-totalW)/2;
+
+    // Title rows
+    label('Domain Layer (Data Mesh)', W/2, row1Y-22, 12, '#6e6e73', false);
+
+    // Domain boxes
+    domains.forEach((d,i) => {
+      const x=startX+i*(domW+20), y=row1Y;
+      roundRect(x,y,domW,domH,10,d.color+'18',d.color,1.5);
+      label(d.name,x+domW/2,y+30,12,d.color,true);
+    });
+
+    // Platform row
+    const platX=startX+60, platY=row2Y, platW=totalW-120, platH=50;
+    label('Self-Serve Platform', W/2, row2Y-18, 12, '#6e6e73', false);
+    roundRect(platX,platY,platW,platH,12,'rgba(0,113,227,0.07)','rgba(0,113,227,0.3)',1.5);
+    label('Storage  ·  Pipelines  ·  Catalog  ·  Governance APIs', W/2, platY+30, 12, '#0071e3', false);
+
+    // Fabric
+    const fabX=pad, fabY=fabricY, fabW=W-pad*2, fabH=58;
+    label('Data Fabric Intelligence Layer', W/2, fabricY-18, 12, '#6e6e73', false);
+    roundRect(fabX,fabY,fabW,fabH,14,'rgba(255,55,95,0.07)','rgba(255,55,95,0.35)',2);
+    label('Active Metadata  ·  Knowledge Graph  ·  AI Integration  ·  Unified Governance', W/2, fabY+34, 12, '#ff375f', false);
+
+    // Arrows: domains → platform
+    domains.forEach((_,i) => {
+      const dx=startX+i*(domW+20)+domW/2;
+      arrow(dx, row1Y+domH, dx, row2Y, '#88888866');
+    });
+
+    // Platform → fabric
+    arrow(W/2, row2Y+platH, W/2, fabricY, '#0071e388');
+
+    // Side labels
+    cx.font='10px -apple-system,sans-serif';
+    cx.fillStyle='#aaa'; cx.textAlign='left';
+    cx.fillText('events & APIs', startX+totalW+8, row1Y+26);
+    cx.fillText('infra primitives', platX+platW+8, row2Y+26);
+
+    // Legend
+    const ly=H-18;
+    [{c:'#0071e3',l:'Mesh Domains'},{c:'#ff375f',l:'Fabric Layer'},{c:'rgba(0,113,227,0.3)',l:'Platform'}].forEach((it,i)=>{
+      const lx=W/2-160+i*110;
+      cx.beginPath(); cx.arc(lx,ly,5,0,Math.PI*2); cx.fillStyle=it.c; cx.fill();
+      cx.font='11px -apple-system,sans-serif'; cx.fillStyle='#888'; cx.textAlign='left';
+      cx.fillText(it.l,lx+10,ly+4);
+    });
+  }
+
+  resize();
+  new ResizeObserver(resize).observe(cv);
+})();
+
+/* ================================================================
+   CTA CANVAS — ambient particles
+================================================================ */
+(function ctaCanvas() {
+  const cv = document.getElementById('cta-canvas');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H, pts=[];
+  function init() {
+    W=cv.width=cv.parentElement.offsetWidth;
+    H=cv.height=cv.parentElement.offsetHeight;
+    pts=Array.from({length:60},()=>({
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-0.5)*0.4, vy:(Math.random()-0.5)*0.4,
+      r:Math.random()*2+0.5, phase:Math.random()*Math.PI*2
+    }));
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.phase+=0.015;
+      if(p.x<0||p.x>W)p.vx*=-1; if(p.y<0||p.y>H)p.vy*=-1;
+      cx.beginPath(); cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle=`rgba(100,150,255,${0.15+Math.sin(p.phase)*0.08})`; cx.fill();
+    });
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+      const d=Math.hypot(pts[i].x-pts[j].x,pts[i].y-pts[j].y);
+      if(d<140){ cx.beginPath(); cx.moveTo(pts[i].x,pts[i].y); cx.lineTo(pts[j].x,pts[j].y);
+        cx.strokeStyle=`rgba(100,150,255,${0.04*(1-d/140)})`; cx.lineWidth=0.8; cx.stroke(); }
+    }
+    raf(draw);
+  }
+  init(); draw();
+  addEventListener('resize',init);
+})();
+
+/* ================================================================
+   INTERSECTION OBSERVER — Scroll reveals
+================================================================ */
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal,.reveal-l,.reveal-r').forEach(el=>io.observe(el));
+
+/* ================================================================
+   COUNTER ANIMATION
+================================================================ */
+const cntIO = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    const el=e.target, target=+el.dataset.to;
+    let cur=0; const step=target/90;
+    const tid=setInterval(()=>{
+      cur=Math.min(cur+step,target);
+      el.textContent=Math.floor(cur);
+      if(cur>=target) clearInterval(tid);
+    },16);
+    cntIO.unobserve(el);
+  });
+},{threshold:0.5});
+document.querySelectorAll('.cnt').forEach(el=>cntIO.observe(el));
+
+/* ================================================================
+   NAV smooth-scroll on anchor clicks
+================================================================ */
+document.querySelectorAll('#nav a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const id=a.getAttribute('href').slice(1);
+    const el=document.getElementById(id);
+    if(el) el.scrollIntoView({behavior:'smooth'});
+  });
+});
+
+/* ================================================================
+   Auto-trigger demo events on scroll into view
+================================================================ */
+let autoTriggered = false;
+const demoIO = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting && !autoTriggered){
+      autoTriggered=true;
+      setTimeout(()=>{ if(window._addPkt) trigger('order'); },800);
+      setTimeout(()=>{ if(window._addPkt) trigger('fabric'); },3200);
+    }
+  });
+},{threshold:0.3});
+const demoSec=document.getElementById('live-demo');
+if(demoSec) demoIO.observe(demoSec);
+</script>
+</body>
+</html>
