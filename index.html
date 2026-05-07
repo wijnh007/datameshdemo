@@ -400,6 +400,74 @@
     }
     footer a { color: var(--blue); text-decoration: none; }
 
+    /* ── Data Products ──────────────────────────────────────────── */
+    #data-products { background: #050508; padding: 120px 0; }
+    .dp-attrs { display: flex; flex-direction: column; gap: 16px; margin-top: 36px; }
+    .dp-attr { display: flex; gap: 14px; align-items: flex-start; }
+    .dp-attr-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 8px; flex-shrink: 0; }
+    .dp-attr-title { font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+    .dp-attr-desc { font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.55; }
+
+    /* ── Data Governance ────────────────────────────────────────── */
+    #governance { background: var(--light); padding: 120px 44px; }
+    .gov-layout {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+      align-items: start; max-width: 1100px; margin: 0 auto;
+    }
+    .gov-pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .gov-pillar {
+      background: var(--white); border-radius: 18px; padding: 28px 24px;
+      box-shadow: 0 2px 18px rgba(0,0,0,0.06);
+      transition: transform 0.3s var(--ease), box-shadow 0.3s;
+    }
+    .gov-pillar:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+    .gov-pillar-icon { font-size: 26px; margin-bottom: 12px; }
+    .gov-pillar-title { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+    .gov-pillar-tag {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      padding: 3px 10px; border-radius: 980px; margin-bottom: 10px;
+    }
+    .gov-pillar-desc { font-size: 13px; line-height: 1.6; color: var(--gray); }
+
+    /* ── Semantic Layer ─────────────────────────────────────────── */
+    #semantic-layer { background: var(--near-black); padding: 120px 0; }
+    .sem-examples { display: flex; flex-direction: column; gap: 14px; margin-top: 36px; }
+    .sem-example { display: flex; align-items: center; gap: 10px; }
+    .sem-business {
+      padding: 7px 13px; border-radius: 8px;
+      background: rgba(0,113,227,0.12); border: 1px solid rgba(0,113,227,0.25);
+      color: var(--blue); font-weight: 600; font-size: 13px;
+      flex-shrink: 0; min-width: 130px; text-align: center;
+    }
+    .sem-arrow { color: rgba(255,255,255,0.22); font-size: 15px; flex-shrink: 0; }
+    .sem-technical {
+      padding: 7px 13px; border-radius: 8px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.5); font-family: var(--mono); font-size: 11px;
+    }
+
+    /* ── Semantics + Products ───────────────────────────────────── */
+    #sem-products { background: var(--light); padding: 120px 44px; }
+    .sem-products-diagram {
+      max-width: 860px; margin: 0 auto 56px;
+      background: var(--white); border-radius: 24px;
+      padding: 8px; box-shadow: 0 2px 40px rgba(0,0,0,0.07);
+    }
+    .sem-products-points {
+      display: grid; grid-template-columns: repeat(2,1fr);
+      gap: 20px; max-width: 860px; margin: 0 auto;
+    }
+    .spp {
+      background: var(--white); border-radius: 16px; padding: 28px 26px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+    }
+    .spp-num {
+      font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--blue); margin-bottom: 8px;
+    }
+    .spp-title { font-size: 17px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+    .spp-desc { font-size: 13px; line-height: 1.65; color: var(--gray); }
+
     /* ── Keyframes ────────────────────────────────────────────── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(28px); }
@@ -420,7 +488,8 @@
 
     /* ── Responsive ───────────────────────────────────────────── */
     @media (max-width: 768px) {
-      .two-col, .grid4 { grid-template-columns: 1fr; }
+      .two-col, .grid4, .gov-layout, .sem-products-points { grid-template-columns: 1fr; }
+      .gov-pillars { grid-template-columns: 1fr 1fr; }
       .cmp-head, .cmp-row { grid-template-columns: 1fr 1fr; }
       .cmp-head > :first-child, .cmp-row > :first-child { grid-column: 1 / -1; margin-bottom: 4px; }
       .stats { gap: 40px; }
@@ -437,6 +506,9 @@
   <ul>
     <li><a href="#mesh-section">Data Mesh</a></li>
     <li><a href="#fabric-section">Data Fabric</a></li>
+    <li><a href="#data-products">Data Products</a></li>
+    <li><a href="#governance">Governance</a></li>
+    <li><a href="#semantic-layer">Semantics</a></li>
     <li><a href="#comparison">Compare</a></li>
     <li><a href="#live-demo">Live Demo</a></li>
   </ul>
@@ -535,6 +607,169 @@
       <div class="p-num">04 — Principle</div>
       <div class="p-title">Federated Governance</div>
       <p class="p-desc">Global policies on privacy, quality, and compliance are enforced through automated guardrails — while each domain retains full autonomy over how it models its own data.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── DATA PRODUCTS ─────────────────────────────────────────────── -->
+<section id="data-products">
+  <div class="inner">
+    <div class="two-col">
+      <div class="reveal-l">
+        <p class="eyebrow" style="color:var(--green)">Data Products</p>
+        <h2 class="display">Data managed<br>as a product.</h2>
+        <p class="body-copy">A data product is a well-defined, discoverable, and trustworthy data asset built and maintained like a first-class software product — with an owner, SLA, schema contract, and quality guarantee.</p>
+        <div class="dp-attrs">
+          <div class="dp-attr">
+            <div class="dp-attr-dot" style="background:var(--blue)"></div>
+            <div>
+              <div class="dp-attr-title">Discoverable</div>
+              <div class="dp-attr-desc">Registered in a data catalog with rich metadata so teams can find, understand, and request access without friction.</div>
+            </div>
+          </div>
+          <div class="dp-attr">
+            <div class="dp-attr-dot" style="background:var(--green)"></div>
+            <div>
+              <div class="dp-attr-title">Self-Describing</div>
+              <div class="dp-attr-desc">Ships with versioned schemas (Avro, OpenAPI), business glossary links, and lineage — no tribal knowledge required.</div>
+            </div>
+          </div>
+          <div class="dp-attr">
+            <div class="dp-attr-dot" style="background:var(--orange)"></div>
+            <div>
+              <div class="dp-attr-title">Trustworthy</div>
+              <div class="dp-attr-desc">Quality SLAs, freshness guarantees, and automated data quality checks backed by the producing domain team.</div>
+            </div>
+          </div>
+          <div class="dp-attr">
+            <div class="dp-attr-dot" style="background:var(--purple)"></div>
+            <div>
+              <div class="dp-attr-title">Governed &amp; Secure</div>
+              <div class="dp-attr-desc">Access policies, classification tags (PII, Confidential), and audit logs baked in — not bolted on.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-r">
+        <canvas id="dp-canvas" class="canvas-frame" height="480"></canvas>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── GOVERNANCE ────────────────────────────────────────────────── -->
+<section id="governance">
+  <div class="section-head reveal">
+    <p class="eyebrow">Data Governance</p>
+    <h2 class="display dark">Compliance and<br>security, automated.</h2>
+    <p class="body-copy dark" style="margin:0 auto;text-align:center">Governance isn't a gate — it's a guardrail. Federated policies enforce privacy, security, quality, and compliance automatically across every data product.</p>
+  </div>
+  <div class="gov-layout">
+    <div class="gov-pillars reveal-l">
+      <div class="gov-pillar">
+        <div class="gov-pillar-icon">🔒</div>
+        <div class="gov-pillar-tag" style="background:rgba(255,55,95,0.09);color:#ff375f">GDPR · CCPA</div>
+        <div class="gov-pillar-title">Privacy</div>
+        <p class="gov-pillar-desc">PII classification, right-to-erasure workflows, and consent-aware data flows enforced at the product level.</p>
+      </div>
+      <div class="gov-pillar">
+        <div class="gov-pillar-icon">🛡️</div>
+        <div class="gov-pillar-tag" style="background:rgba(0,113,227,0.09);color:#0071e3">RBAC · ABAC</div>
+        <div class="gov-pillar-title">Security</div>
+        <p class="gov-pillar-desc">Role-based and attribute-based access control with column-level masking, row filters, and full audit trails.</p>
+      </div>
+      <div class="gov-pillar">
+        <div class="gov-pillar-icon">📊</div>
+        <div class="gov-pillar-tag" style="background:rgba(48,209,88,0.09);color:#30d158">SLA · DQS</div>
+        <div class="gov-pillar-title">Quality</div>
+        <p class="gov-pillar-desc">Automated data quality scores, freshness checks, and schema drift alerts with incident routing to the owning team.</p>
+      </div>
+      <div class="gov-pillar">
+        <div class="gov-pillar-icon">✅</div>
+        <div class="gov-pillar-tag" style="background:rgba(191,90,242,0.09);color:#bf5af2">SOC2 · HIPAA</div>
+        <div class="gov-pillar-title">Compliance</div>
+        <p class="gov-pillar-desc">Continuous compliance posture mapped to SOC2, HIPAA, and ISO 27001 controls — with automated evidence collection.</p>
+      </div>
+    </div>
+    <div class="reveal-r">
+      <canvas id="gov-canvas" class="canvas-frame" height="440"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ── SEMANTIC LAYER ─────────────────────────────────────────────── -->
+<section id="semantic-layer">
+  <div class="inner">
+    <div class="two-col">
+      <div class="reveal-l">
+        <canvas id="sem-canvas" class="canvas-frame" height="480"></canvas>
+      </div>
+      <div class="reveal-r">
+        <p class="eyebrow" style="color:var(--cyan)">Semantic Layer</p>
+        <h2 class="display">One definition.<br>Everyone speaks<br>the same language.</h2>
+        <p class="body-copy">A business-wide semantic layer is a single source of truth that maps business concepts to technical data. Revenue means the same thing in Finance as it does in Analytics — defined once, consumed everywhere.</p>
+        <div class="sem-examples">
+          <div class="sem-example">
+            <div class="sem-business">Revenue</div>
+            <div class="sem-arrow">→</div>
+            <div class="sem-technical">SUM(orders.amount) WHERE status='paid'</div>
+          </div>
+          <div class="sem-example">
+            <div class="sem-business">Customer LTV</div>
+            <div class="sem-arrow">→</div>
+            <div class="sem-technical">JOIN orders ON customers.id GROUP BY 90d</div>
+          </div>
+          <div class="sem-example">
+            <div class="sem-business">Active Users</div>
+            <div class="sem-arrow">→</div>
+            <div class="sem-technical">COUNT(DISTINCT sessions.user_id LAST 30d)</div>
+          </div>
+          <div class="sem-example">
+            <div class="sem-business">Gross Margin</div>
+            <div class="sem-arrow">→</div>
+            <div class="sem-technical">(revenue - COGS) / revenue * 100</div>
+          </div>
+          <div class="sem-example">
+            <div class="sem-business">Churn Rate</div>
+            <div class="sem-arrow">→</div>
+            <div class="sem-technical">churned_customers / prev_period_total</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SEMANTICS + PRODUCTS ──────────────────────────────────────── -->
+<section id="sem-products">
+  <div class="section-head reveal">
+    <p class="eyebrow" style="color:var(--blue)">Semantics &amp; Data Products</p>
+    <h2 class="display dark">Products form the<br>semantic foundation.</h2>
+    <p class="body-copy dark" style="margin:0 auto;text-align:center">The semantic layer isn't separate from your data products — it's assembled from them. Each product's schema and business metadata contributes to a living, organization-wide ontology.</p>
+  </div>
+  <div class="sem-products-diagram reveal">
+    <canvas id="semp-canvas" height="340" style="width:100%;display:block;"></canvas>
+  </div>
+  <div class="sem-products-points">
+    <div class="spp reveal d1">
+      <div class="spp-num">01 — How it connects</div>
+      <div class="spp-title">Contracts carry semantics</div>
+      <p class="spp-desc">Each data product ships with a semantic contract: business term mappings, metric definitions, and lineage to the entities it represents. The semantic layer reads these contracts automatically.</p>
+    </div>
+    <div class="spp reveal d2">
+      <div class="spp-num">02 — How it connects</div>
+      <div class="spp-title">Domain teams own the meaning</div>
+      <p class="spp-desc">The Orders domain defines what "placed order" means. The Customers domain owns "active customer." Domain expertise is encoded into the semantic layer — not decided centrally.</p>
+    </div>
+    <div class="spp reveal d3">
+      <div class="spp-num">03 — How it connects</div>
+      <div class="spp-title">Metrics compose across products</div>
+      <p class="spp-desc">Cross-domain metrics like Revenue per Customer are assembled by joining semantic definitions from multiple products — no custom SQL required, no misaligned numbers in dashboards.</p>
+    </div>
+    <div class="spp reveal d4">
+      <div class="spp-num">04 — How it connects</div>
+      <div class="spp-title">Governance and semantics align</div>
+      <p class="spp-desc">Sensitivity classifications and access policies from the governance layer are inherited by the semantic layer — so PII-tagged fields are automatically masked in any derived metric.</p>
     </div>
   </div>
 </section>
@@ -1040,6 +1275,437 @@ function raf(fn) { requestAnimationFrame(fn); }
     cx.font='bold 12px -apple-system,sans-serif';
     cx.fillStyle='rgba(191,90,242,0.55)'; cx.textAlign='center';
     cx.fillText('Active Metadata Intelligence Layer',W/2,24);
+
+    raf(draw);
+  }
+
+  resize(); draw();
+  new ResizeObserver(resize).observe(cv);
+})();
+
+/* ================================================================
+   DATA PRODUCTS CANVAS — Source → Product Card → Consumer
+================================================================ */
+(function dpCanvas() {
+  const cv = document.getElementById('dp-canvas');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H, t = 0, pkts = [];
+
+  const SOURCES = [
+    { name:'CRM', color:'#0071e3' },
+    { name:'ERP', color:'#30d158' },
+    { name:'Web Events', color:'#ff9f0a' },
+    { name:'Mobile', color:'#32ade6' },
+  ];
+  const CONSUMERS = [
+    { name:'Analytics', color:'#0071e3' },
+    { name:'Finance', color:'#bf5af2' },
+    { name:'ML Models', color:'#ff375f' },
+    { name:'Reports', color:'#30d158' },
+  ];
+
+  function resize() {
+    const r = cv.getBoundingClientRect();
+    W = cv.width = r.width || 500;
+    H = cv.height = +cv.getAttribute('height') || 480;
+  }
+
+  setInterval(() => {
+    const si = Math.random()*SOURCES.length|0;
+    pkts.push({ dir:'in', idx:si, t0:0, spd:0.013+Math.random()*0.006 });
+    const ci = Math.random()*CONSUMERS.length|0;
+    pkts.push({ dir:'out', idx:ci, t0:0, spd:0.013+Math.random()*0.006 });
+  }, 1200);
+
+  function drawNode(n, x, y, r) {
+    const g = cx.createRadialGradient(x,y,0,x,y,r+14);
+    g.addColorStop(0,n.color+'33'); g.addColorStop(1,'transparent');
+    cx.beginPath(); cx.arc(x,y,r+14,0,Math.PI*2); cx.fillStyle=g; cx.fill();
+    cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2);
+    cx.strokeStyle=n.color; cx.lineWidth=1.5; cx.stroke();
+    cx.fillStyle=n.color+'22'; cx.fill();
+    cx.font='9px -apple-system,sans-serif';
+    cx.fillStyle='rgba(255,255,255,0.75)'; cx.textAlign='center';
+    cx.fillText(n.name,x,y+4);
+    n._x=x; n._y=y;
+  }
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    t += 0.015;
+
+    const cX=W/2, cY=H/2;
+    const cardW=162, cardH=210;
+    const cardX=cX-cardW/2, cardY=cY-cardH/2;
+    const nR=20;
+
+    SOURCES.forEach((s,i) => {
+      const y = H*0.14+i*(H*0.24);
+      drawNode(s, nR+26, y, nR);
+      cx.beginPath(); cx.moveTo(nR+26+nR,y); cx.lineTo(cardX,cY);
+      cx.strokeStyle=s.color+'15'; cx.lineWidth=1;
+      cx.setLineDash([3,7]); cx.stroke(); cx.setLineDash([]);
+    });
+    CONSUMERS.forEach((c,i) => {
+      const y = H*0.14+i*(H*0.24);
+      drawNode(c, W-nR-26, y, nR);
+      cx.beginPath(); cx.moveTo(cardX+cardW,cY); cx.lineTo(W-nR-26-nR,y);
+      cx.strokeStyle=c.color+'15'; cx.lineWidth=1;
+      cx.setLineDash([3,7]); cx.stroke(); cx.setLineDash([]);
+    });
+
+    pkts = pkts.filter(p=>p.t0<=1.2);
+    pkts.forEach(p => {
+      p.t0+=p.spd;
+      const cl=Math.min(1,p.t0);
+      let fx,fy,tx2,ty2,col;
+      if(p.dir==='in'){
+        const s=SOURCES[p.idx]; fx=s._x+nR; fy=s._y; tx2=cardX; ty2=cY; col=s.color;
+      } else {
+        const c=CONSUMERS[p.idx]; fx=cardX+cardW; fy=cY; tx2=c._x-nR; ty2=c._y; col=c.color;
+      }
+      for(let i=0;i<5;i++){
+        const tt=Math.max(0,cl-i*0.03);
+        cx.beginPath(); cx.arc(fx+(tx2-fx)*tt,fy+(ty2-fy)*tt,3-i*0.5,0,Math.PI*2);
+        cx.fillStyle=col+Math.round((1-i/5)*200).toString(16).padStart(2,'0');
+        cx.fill();
+      }
+    });
+
+    // Product card
+    cx.save();
+    cx.beginPath();
+    const cr=14;
+    cx.moveTo(cardX+cr,cardY);
+    cx.arcTo(cardX+cardW,cardY,cardX+cardW,cardY+cardH,cr);
+    cx.arcTo(cardX+cardW,cardY+cardH,cardX,cardY+cardH,cr);
+    cx.arcTo(cardX,cardY+cardH,cardX,cardY,cr);
+    cx.arcTo(cardX,cardY,cardX+cardW,cardY,cr);
+    cx.closePath();
+    cx.fillStyle='rgba(255,255,255,0.05)'; cx.fill();
+    cx.strokeStyle='rgba(255,255,255,0.13)'; cx.lineWidth=1.5; cx.stroke();
+    cx.restore();
+
+    cx.font='bold 11px -apple-system,sans-serif';
+    cx.fillStyle='rgba(255,255,255,0.9)'; cx.textAlign='center';
+    cx.fillText('Orders Product',cX,cardY+22);
+    cx.font='9px -apple-system,sans-serif';
+    cx.fillStyle='rgba(255,255,255,0.35)';
+    cx.fillText('v2.4 · domain:orders',cX,cardY+38);
+
+    // Quality gauge
+    const gCx=cX, gCy=cardY+102, gR=32;
+    cx.beginPath(); cx.arc(gCx,gCy,gR,Math.PI,Math.PI*2);
+    cx.strokeStyle='rgba(255,255,255,0.08)'; cx.lineWidth=6; cx.stroke();
+    cx.beginPath(); cx.arc(gCx,gCy,gR,Math.PI,Math.PI+Math.PI*0.97);
+    cx.strokeStyle='#30d158'; cx.lineWidth=6; cx.lineCap='round'; cx.stroke(); cx.lineCap='butt';
+    cx.font='bold 13px -apple-system,sans-serif';
+    cx.fillStyle='#30d158'; cx.textAlign='center';
+    cx.fillText('97%',gCx,gCy+5);
+    cx.font='8px -apple-system,sans-serif';
+    cx.fillStyle='rgba(255,255,255,0.35)';
+    cx.fillText('Quality SLA',gCx,gCy+19);
+
+    // Tags
+    ['PII-free','SLA 99%','v2.4'].forEach((tag,i)=>{
+      const tw=50, tx3=cardX+9+i*54, ty3=cardY+cardH-38;
+      cx.beginPath(); cx.rect(tx3,ty3,tw,17);
+      cx.fillStyle='rgba(0,113,227,0.18)'; cx.fill();
+      cx.font='8px -apple-system,sans-serif';
+      cx.fillStyle='#64d2ff'; cx.textAlign='center';
+      cx.fillText(tag,tx3+tw/2,ty3+12);
+    });
+    cx.font='8px "SF Mono",monospace';
+    cx.fillStyle='rgba(255,255,255,0.28)'; cx.textAlign='center';
+    cx.fillText('schema:orders.order.v2',cX,cardY+cardH-14);
+
+    raf(draw);
+  }
+
+  resize(); draw();
+  new ResizeObserver(resize).observe(cv);
+})();
+
+/* ================================================================
+   GOVERNANCE CANVAS — Sweeping policy scans over data grid
+================================================================ */
+(function govCanvas() {
+  const cv = document.getElementById('gov-canvas');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H, t = 0;
+
+  const POLICIES = [
+    { name:'Privacy', color:'#ff375f', x:0 },
+    { name:'Security', color:'#0071e3', x:0 },
+    { name:'Quality', color:'#30d158', x:0 },
+    { name:'Compliance', color:'#bf5af2', x:0 },
+  ];
+  const COLS=9, ROWS=6;
+  const STATUS=Array.from({length:ROWS*COLS},()=>Math.random()<0.83?'ok':(Math.random()<0.6?'warn':'err'));
+
+  function resize() {
+    const r=cv.getBoundingClientRect();
+    W=cv.width=r.width||500;
+    H=cv.height=+cv.getAttribute('height')||440;
+  }
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    t+=0.012;
+
+    const gridW=W*0.9, gridH=H*0.68;
+    const gX=(W-gridW)/2, gY=(H-gridH)/2-10;
+    const cellW=gridW/COLS, cellH=gridH/ROWS;
+
+    // Scan beams
+    POLICIES.forEach((p,i)=>{
+      p.x=((t*55+i*(W/POLICIES.length))%(W+80))-40;
+      const beam=cx.createLinearGradient(p.x-28,0,p.x+28,0);
+      beam.addColorStop(0,'transparent'); beam.addColorStop(0.5,p.color+'1a'); beam.addColorStop(1,'transparent');
+      cx.fillStyle=beam; cx.fillRect(p.x-28,gY-8,56,gridH+16);
+    });
+
+    for(let r=0;r<ROWS;r++){
+      for(let c=0;c<COLS;c++){
+        const x=gX+c*cellW+4, y=gY+r*cellH+4;
+        const cw=cellW-8, ch=cellH-8;
+        const status=STATUS[r*COLS+c];
+        const midX=x+cw/2;
+        let scanned=false;
+        POLICIES.forEach(p=>{ if(Math.abs(p.x-midX)<32) scanned=true; });
+        const activePol=POLICIES[Math.floor(t*1.5)%POLICIES.length];
+        let col=scanned?activePol.color+'aa':(status==='ok'?'rgba(48,209,88,0.22)':(status==='warn'?'rgba(255,159,10,0.22)':'rgba(255,55,95,0.22)'));
+        let stroke=scanned?activePol.color+'55':(status==='ok'?'rgba(48,209,88,0.28)':(status==='warn'?'rgba(255,159,10,0.28)':'rgba(255,55,95,0.28)'));
+        cx.beginPath(); cx.rect(x,y,cw,ch);
+        cx.fillStyle=col; cx.fill();
+        cx.strokeStyle=stroke; cx.lineWidth=1; cx.stroke();
+      }
+    }
+
+    POLICIES.forEach(p=>{
+      cx.font='bold 9px -apple-system,sans-serif';
+      cx.fillStyle=p.color+'cc'; cx.textAlign='center';
+      cx.fillText(p.name,Math.max(20,Math.min(W-20,p.x)),gY-14);
+    });
+
+    const ly=gY+gridH+22;
+    [{c:'rgba(48,209,88,0.55)',l:'Compliant'},{c:'rgba(255,159,10,0.55)',l:'Warning'},{c:'rgba(255,55,95,0.55)',l:'Violation'}].forEach((it,i)=>{
+      const lx=W/2-130+i*120;
+      cx.beginPath(); cx.arc(lx,ly,5,0,Math.PI*2); cx.fillStyle=it.c; cx.fill();
+      cx.font='11px -apple-system,sans-serif'; cx.fillStyle='rgba(0,0,0,0.5)'; cx.textAlign='left';
+      cx.fillText(it.l,lx+9,ly+4);
+    });
+
+    raf(draw);
+  }
+
+  resize(); draw();
+  new ResizeObserver(resize).observe(cv);
+})();
+
+/* ================================================================
+   SEMANTIC CANVAS — Business terms ↔ Technical SQL mappings
+================================================================ */
+(function semCanvas() {
+  const cv = document.getElementById('sem-canvas');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H, t = 0, activeTerm = 0, termTimer = 0;
+
+  const TERMS = [
+    { business:'Revenue',       technical:'orders.amount WHERE paid',   color:'#0071e3' },
+    { business:'Customer LTV',  technical:'JOIN orders × customers',     color:'#30d158' },
+    { business:'Active Users',  technical:'sessions.user_id LAST 30d',  color:'#ff9f0a' },
+    { business:'Gross Margin',  technical:'(rev-COGS)/rev',             color:'#bf5af2' },
+    { business:'Churn Rate',    technical:'churned/prev_total',          color:'#32ade6' },
+    { business:'MRR',           technical:'subscriptions.amt×12',       color:'#ff375f' },
+  ];
+
+  function resize() {
+    const r=cv.getBoundingClientRect();
+    W=cv.width=r.width||500;
+    H=cv.height=+cv.getAttribute('height')||480;
+  }
+
+  function cubicX(p0,p1,p2,p3,tt) {
+    const m=1-tt;
+    return m*m*m*p0+3*m*m*tt*p1+3*m*tt*tt*p2+tt*tt*tt*p3;
+  }
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    t+=0.012; termTimer+=0.012;
+    if(termTimer>2.6){ termTimer=0; activeTerm=(activeTerm+1)%TERMS.length; }
+
+    const lX=80, rX=W-80;
+    const itemH=H/(TERMS.length+1);
+
+    // Center band
+    const band=cx.createLinearGradient(lX+50,0,rX-50,0);
+    band.addColorStop(0,'transparent'); band.addColorStop(0.5,'rgba(50,173,230,0.04)'); band.addColorStop(1,'transparent');
+    cx.fillStyle=band; cx.fillRect(lX+40,0,rX-lX-80,H);
+    cx.font='bold 10px -apple-system,sans-serif';
+    cx.fillStyle='rgba(50,173,230,0.45)'; cx.textAlign='center';
+    cx.fillText('SEMANTIC LAYER',W/2,H/2-4);
+    cx.font='8px -apple-system,sans-serif';
+    cx.fillStyle='rgba(50,173,230,0.28)';
+    cx.fillText('business ontology',W/2,H/2+12);
+
+    TERMS.forEach((term,i)=>{
+      const y=itemH*(i+1);
+      const isActive=i===activeTerm;
+
+      // Business term box
+      const bW=118, bH=28;
+      cx.beginPath(); cx.rect(lX-bW/2,y-bH/2,bW,bH);
+      cx.fillStyle=isActive?term.color+'22':'rgba(255,255,255,0.04)'; cx.fill();
+      cx.strokeStyle=isActive?term.color:'rgba(255,255,255,0.1)'; cx.lineWidth=isActive?1.5:0.7; cx.stroke();
+      cx.font=(isActive?'bold ':'')+' 11px -apple-system,sans-serif';
+      cx.fillStyle=isActive?term.color:'rgba(255,255,255,0.4)'; cx.textAlign='center';
+      cx.fillText(term.business,lX,y+4);
+
+      // Technical box
+      const tW=136, tH=28;
+      cx.beginPath(); cx.rect(rX-tW/2,y-tH/2,tW,tH);
+      cx.fillStyle=isActive?term.color+'14':'rgba(255,255,255,0.02)'; cx.fill();
+      cx.strokeStyle=isActive?term.color+'55':'rgba(255,255,255,0.07)'; cx.lineWidth=isActive?1.2:0.6; cx.stroke();
+      cx.font='9px "SF Mono",monospace';
+      cx.fillStyle=isActive?'rgba(255,255,255,0.75)':'rgba(255,255,255,0.2)'; cx.textAlign='center';
+      cx.fillText(term.technical,rX,y+4);
+
+      if(isActive){
+        cx.beginPath(); cx.moveTo(lX+bW/2,y);
+        cx.bezierCurveTo(W/2-18,y,W/2+18,y,rX-tW/2,y);
+        cx.strokeStyle=term.color+'44'; cx.lineWidth=1.5;
+        cx.setLineDash([4,6]); cx.stroke(); cx.setLineDash([]);
+        const pct=termTimer/2.6;
+        const bx=cubicX(lX+bW/2,W/2-18,W/2+18,rX-tW/2,pct);
+        cx.beginPath(); cx.arc(bx,y,4.5,0,Math.PI*2);
+        cx.fillStyle=term.color; cx.fill();
+        cx.beginPath(); cx.arc(bx,y,9,0,Math.PI*2);
+        cx.fillStyle=term.color+'44'; cx.fill();
+      }
+    });
+
+    raf(draw);
+  }
+
+  resize(); draw();
+  new ResizeObserver(resize).observe(cv);
+})();
+
+/* ================================================================
+   SEMANTICS+PRODUCTS CANVAS — Three-tier architecture
+================================================================ */
+(function sempCanvas() {
+  const cv = document.getElementById('semp-canvas');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  let W, H, t = 0, pkts = [];
+
+  const PRODUCTS=[
+    {name:'Orders',color:'#0071e3'},{name:'Customers',color:'#30d158'},
+    {name:'Inventory',color:'#ff9f0a'},{name:'Finance',color:'#bf5af2'},
+    {name:'Events',color:'#32ade6'},
+  ];
+  const USERS=[
+    {name:'Analytics',color:'#0071e3'},{name:'Finance',color:'#bf5af2'},
+    {name:'ML / AI',color:'#ff9f0a'},{name:'Dashboards',color:'#30d158'},
+  ];
+
+  function resize() {
+    const r=cv.getBoundingClientRect();
+    W=cv.width=r.width||840;
+    H=cv.height=+cv.getAttribute('height')||340;
+  }
+
+  setInterval(()=>{
+    const pi=Math.random()*PRODUCTS.length|0;
+    const ui=Math.random()*USERS.length|0;
+    pkts.push({stage:0,pi,ui,t0:0,spd:0.019+Math.random()*0.008,color:PRODUCTS[pi].color});
+    setTimeout(()=>pkts.push({stage:1,pi,ui,t0:0,spd:0.019+Math.random()*0.008,color:USERS[ui].color}),500);
+  },1500);
+
+  function draw() {
+    cx.clearRect(0,0,W,H);
+    t+=0.01;
+
+    const r1Y=H*0.81, r2Y=H*0.5, r3Y=H*0.16;
+    const pSp=W/(PRODUCTS.length+1), uSp=W/(USERS.length+1);
+
+    // Layer bands
+    [[r1Y,'#0071e3','Data Products'],[r2Y,'#32ade6','Semantic Layer'],[r3Y,'#bf5af2','Business Users']].forEach(([ry,col,lbl])=>{
+      const g=cx.createLinearGradient(0,ry-26,0,ry+26);
+      g.addColorStop(0,'transparent'); g.addColorStop(0.5,col+'09'); g.addColorStop(1,'transparent');
+      cx.fillStyle=g; cx.fillRect(0,ry-26,W,52);
+      cx.font='8px -apple-system,sans-serif';
+      cx.fillStyle=col+'44'; cx.textAlign='left';
+      cx.fillText(lbl.toUpperCase(),10,ry-14);
+    });
+
+    // Semantic hub
+    const shG=cx.createRadialGradient(W/2,r2Y,0,W/2,r2Y,40);
+    shG.addColorStop(0,'rgba(50,173,230,0.2)'); shG.addColorStop(1,'transparent');
+    cx.beginPath(); cx.arc(W/2,r2Y,40,0,Math.PI*2); cx.fillStyle=shG; cx.fill();
+    cx.beginPath(); cx.arc(W/2,r2Y,22,0,Math.PI*2);
+    cx.strokeStyle='rgba(50,173,230,0.6)'; cx.lineWidth=2; cx.stroke();
+    cx.font='bold 8px -apple-system,sans-serif';
+    cx.fillStyle='rgba(50,173,230,0.9)'; cx.textAlign='center';
+    cx.fillText('SEMANTIC',W/2,r2Y-2); cx.fillText('LAYER',W/2,r2Y+10);
+
+    // Faint spokes
+    PRODUCTS.forEach((p,i)=>{
+      const px=pSp*(i+1);
+      cx.beginPath(); cx.moveTo(px,r1Y-16); cx.lineTo(W/2,r2Y+22);
+      cx.strokeStyle=p.color+'12'; cx.lineWidth=1;
+      cx.setLineDash([3,6]); cx.stroke(); cx.setLineDash([]);
+    });
+    USERS.forEach((u,i)=>{
+      const ux=uSp*(i+1);
+      cx.beginPath(); cx.moveTo(W/2,r2Y-22); cx.lineTo(ux,r3Y+16);
+      cx.strokeStyle=u.color+'12'; cx.lineWidth=1;
+      cx.setLineDash([3,6]); cx.stroke(); cx.setLineDash([]);
+    });
+
+    // Packets
+    pkts=pkts.filter(p=>p.t0<=1.2);
+    pkts.forEach(p=>{
+      p.t0+=p.spd;
+      const cl=Math.min(1,p.t0);
+      let fx,fy,tx2,ty2;
+      if(p.stage===0){ fx=pSp*(p.pi+1); fy=r1Y-16; tx2=W/2; ty2=r2Y+22; }
+      else { fx=W/2; fy=r2Y-22; tx2=uSp*(p.ui+1); ty2=r3Y+16; }
+      for(let i=0;i<5;i++){
+        const tt=Math.max(0,cl-i*0.025);
+        cx.beginPath(); cx.arc(fx+(tx2-fx)*tt,fy+(ty2-fy)*tt,3-i*0.5,0,Math.PI*2);
+        cx.fillStyle=p.color+Math.round((1-i/5)*200).toString(16).padStart(2,'0');
+        cx.fill();
+      }
+    });
+
+    // Product nodes
+    PRODUCTS.forEach((p,i)=>{
+      const px=pSp*(i+1), pulse=Math.sin(t+i)*1.5;
+      cx.beginPath(); cx.arc(px,r1Y,17+pulse*0.15,0,Math.PI*2);
+      cx.strokeStyle=p.color; cx.lineWidth=1.5; cx.stroke();
+      cx.fillStyle=p.color+'18'; cx.fill();
+      cx.font='9px -apple-system,sans-serif';
+      cx.fillStyle='rgba(255,255,255,0.72)'; cx.textAlign='center';
+      cx.fillText(p.name,px,r1Y+4);
+    });
+
+    // User nodes
+    USERS.forEach((u,i)=>{
+      const ux=uSp*(i+1);
+      cx.beginPath(); cx.arc(ux,r3Y,15,0,Math.PI*2);
+      cx.strokeStyle=u.color; cx.lineWidth=1.5; cx.stroke();
+      cx.fillStyle=u.color+'18'; cx.fill();
+      cx.font='9px -apple-system,sans-serif';
+      cx.fillStyle='rgba(255,255,255,0.72)'; cx.textAlign='center';
+      cx.fillText(u.name,ux,r3Y+4);
+    });
 
     raf(draw);
   }
