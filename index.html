@@ -400,6 +400,29 @@
     }
     footer a { color: var(--blue); text-decoration: none; }
 
+    /* ── Data Product Layers ────────────────────────────────────── */
+    #dp-layers { background: var(--near-black); padding: 120px 0; }
+    .dpl-wrap { max-width: 940px; margin: 0 auto; padding: 0 44px; }
+    .dpl-tabs { display: flex; gap: 10px; justify-content: center; margin-bottom: 28px; }
+    .dpl-tab {
+      padding: 9px 26px; border-radius: 980px;
+      border: 1.5px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.55);
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      font-family: var(--font); transition: all 0.2s;
+    }
+    .dpl-tab.active { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    .dpl-tab:hover:not(.active) { border-color: rgba(255,255,255,0.3); color: var(--white); }
+    .dpl-card {
+      background: rgba(255,255,255,0.03); border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 6px; margin-bottom: 20px;
+    }
+    #dpl-canvas { width: 100%; display: block; }
+    .dpl-legend { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+    .dpl-leg { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(255,255,255,0.4); }
+    .dpl-leg-sq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
     /* ── Data Products ──────────────────────────────────────────── */
     #data-products { background: #050508; padding: 120px 0; }
     .dp-attrs { display: flex; flex-direction: column; gap: 16px; margin-top: 36px; }
@@ -653,6 +676,30 @@
       <div class="reveal-r">
         <canvas id="dp-canvas" class="canvas-frame" height="480"></canvas>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DATA PRODUCT LAYERS ──────────────────────────────────────── -->
+<section id="dp-layers">
+  <div class="section-head reveal">
+    <p class="eyebrow" style="color:var(--green)">Data Product Depth</p>
+    <h2 class="display">One product.<br>Three layers of meaning.</h2>
+    <p class="body-copy" style="margin:0 auto;text-align:center">A data product carries meaning at three distinct levels simultaneously: the language of the source system, the unified business ontology, and the knowledge model consumed by AI and analytics.</p>
+  </div>
+  <div class="dpl-wrap">
+    <div class="dpl-tabs reveal">
+      <button class="dpl-tab active" onclick="dplSwitch(0,this)">&#x1F464; Customer</button>
+      <button class="dpl-tab" onclick="dplSwitch(1,this)">&#x1F4E6; Order</button>
+      <button class="dpl-tab" onclick="dplSwitch(2,this)">&#x1F3F7;&#xFE0F; Product</button>
+    </div>
+    <div class="dpl-card reveal">
+      <canvas id="dpl-canvas" height="460"></canvas>
+    </div>
+    <div class="dpl-legend">
+      <div class="dpl-leg"><div class="dpl-leg-sq" style="background:#bf5af2"></div>Knowledge Model Layer &mdash; AI &amp; analytics consumer language</div>
+      <div class="dpl-leg"><div class="dpl-leg-sq" style="background:#0071e3"></div>Semantic Layer &mdash; harmonised business ontology</div>
+      <div class="dpl-leg"><div class="dpl-leg-sq" style="background:#32ade6"></div>Data Management Layer &mdash; source application schema</div>
     </div>
   </div>
 </section>
@@ -1281,6 +1328,138 @@ function raf(fn) { requestAnimationFrame(fn); }
 
   resize(); draw();
   new ResizeObserver(resize).observe(cv);
+})();
+
+/* ================================================================
+   DATA PRODUCT LAYERS CANVAS
+================================================================ */
+var DPL_DATA = [
+  { name:'Customer', color:'#30d158',
+    dm:  ['CUST_ID:INT','FIRST_NM:VAR','EMAIL:VAR','CITY_CD:CHAR','CNTRY:CHAR','CREATE_DT:DATE'],
+    sem: ['customer.id','customer.name','customer.email','customer.city','customer.country','customer.createdAt'],
+    km:  ['ex:Customer','foaf:name','schema:email','ex:locatedIn','ex:nationality','ex:registeredOn'] },
+  { name:'Order', color:'#0071e3',
+    dm:  ['ORD_ID:INT','CUST_FK:INT','ORD_DT:DTTM','STAT_CD:CHAR','GROSS:DEC','CURR_CD:CHAR'],
+    sem: ['order.id','order.customer','order.date','order.status','order.amount','order.currency'],
+    km:  ['ex:Order','ex:placedBy','ex:orderDate','ex:hasStatus','schema:price','schema:currency'] },
+  { name:'Product', color:'#ff9f0a',
+    dm:  ['PROD_SKU:VAR','CAT_ID:INT','LIST_PRC:DEC','STK_CNT:INT','SUPP_ID:INT','UOM_CD:CHAR'],
+    sem: ['product.sku','product.category','product.listPrice','product.stock','product.supplier','product.unit'],
+    km:  ['ex:Product','ex:inCategory','schema:price','ex:hasStock','ex:suppliedBy','ex:unitOfMeasure'] },
+];
+var dplObj = 0, dplAlpha = 1;
+window.dplSwitch = function(idx, btn) {
+  document.querySelectorAll('.dpl-tab').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  if (idx === dplObj) return;
+  var iv = setInterval(function() {
+    dplAlpha = Math.max(0, dplAlpha - .12);
+    if (dplAlpha <= 0) {
+      clearInterval(iv);
+      dplObj = idx;
+      var iv2 = setInterval(function() {
+        dplAlpha = Math.min(1, dplAlpha + .12);
+        if (dplAlpha >= 1) clearInterval(iv2);
+      }, 14);
+    }
+  }, 14);
+};
+(function dplCanvas() {
+  var cv = document.getElementById('dpl-canvas'); if (!cv) return;
+  var cx = cv.getContext('2d'); var W, H, t = 0, pkts = [];
+  var LH = 110, GAP = 50;
+  var LCOLS = ['#bf5af2', '#0071e3', '#32ade6'];
+  var LLBLS = ['Knowledge Model Layer', 'Semantic Layer', 'Data Management Layer'];
+  var LSUBS = ['AI & Analytics Consumer Language', 'Harmonised Business Ontology', 'Source Application & Process Schema'];
+  var LY = [0, 0, 0];
+  function resize() {
+    var r = cv.getBoundingClientRect();
+    W = cv.width = r.width || 840;
+    H = cv.height = +(cv.getAttribute('height') || 460);
+    LY[2] = H - 24 - LH; LY[1] = LY[2] - GAP - LH; LY[0] = LY[1] - GAP - LH;
+  }
+  setInterval(function() {
+    if (!W) return;
+    var xf = W * (.2 + Math.random() * .6);
+    pkts.push({ y1: LY[2], y2: LY[1] + LH, x: xf, t0: 0, spd: .026, col: '#32ade6' });
+    setTimeout(function() {
+      pkts.push({ y1: LY[1], y2: LY[0] + LH, x: xf + (Math.random() - .5) * 30, t0: 0, spd: .023, col: '#0071e3' });
+    }, 380);
+  }, 1800);
+  function pill(x, y, w, h, r) {
+    cx.beginPath();
+    cx.moveTo(x + r, y);
+    cx.arcTo(x + w, y, x + w, y + h, r);
+    cx.arcTo(x + w, y + h, x, y + h, r);
+    cx.arcTo(x, y + h, x, y, r);
+    cx.arcTo(x, y, x + w, y, r);
+    cx.closePath();
+  }
+  function drawLayer(li, obj) {
+    var lx = 16, ly = LY[li], lw = W - 32, lh = LH, col = LCOLS[li];
+    var fields = li === 0 ? obj.km : (li === 1 ? obj.sem : obj.dm);
+    var isMono = li !== 1;
+    pill(lx, ly, lw, lh, 12); cx.fillStyle = col + '0e'; cx.fill();
+    cx.strokeStyle = col + '35'; cx.lineWidth = 1.5; cx.stroke();
+    cx.fillStyle = col; cx.fillRect(lx, ly + 12, 4, lh - 24);
+    cx.font = 'bold 9.5px -apple-system,sans-serif'; cx.fillStyle = col;
+    cx.textAlign = 'left'; cx.fillText(LLBLS[li], lx + 14, ly + 17);
+    cx.font = '8.5px -apple-system,sans-serif'; cx.fillStyle = 'rgba(255,255,255,0.3)';
+    cx.fillText(LSUBS[li], lx + 14, ly + 30);
+    cx.globalAlpha = dplAlpha;
+    var badge = li === 0 ? ('owl:Class \xB7 ' + obj.name) : (li === 1 ? ('concept \xB7 ' + obj.name) : ('src \xB7 ' + obj.name + '_T'));
+    var bw = 122, bx2 = lx + lw - bw - 8;
+    pill(bx2, ly + 7, bw, 17, 980); cx.fillStyle = col + '18'; cx.fill();
+    cx.font = '8px "SF Mono",monospace'; cx.fillStyle = col; cx.textAlign = 'center';
+    cx.fillText(badge, bx2 + bw / 2, ly + 19);
+    var chipH = 21, chipY = ly + 44, avail = lw - 28, chipW = Math.floor((avail - 5 * 6) / 6);
+    fields.slice(0, 6).forEach(function(f, fi) {
+      var cx2 = lx + 14 + fi * (chipW + 6);
+      pill(cx2, chipY, chipW, chipH, 4); cx.fillStyle = col + '14'; cx.fill();
+      cx.strokeStyle = col + '28'; cx.lineWidth = 1; cx.stroke();
+      cx.font = (isMono ? '7.5px "SF Mono",monospace' : '8.5px -apple-system,sans-serif');
+      cx.fillStyle = col; cx.textAlign = 'center';
+      var txt = f.length > 18 ? f.slice(0, 16) + '…' : f;
+      cx.fillText(txt, cx2 + chipW / 2, chipY + 14);
+    });
+    cx.globalAlpha = 1;
+  }
+  function draw() {
+    cx.clearRect(0, 0, W, H); t += .012; var obj = DPL_DATA[dplObj];
+    cx.globalAlpha = dplAlpha * .7 + .1;
+    pill(4, LY[0] - 14, W - 8, LY[2] + LH + 14 - (LY[0] - 14), 18);
+    cx.strokeStyle = obj.color + '28'; cx.lineWidth = 2; cx.setLineDash([7, 5]); cx.stroke(); cx.setLineDash([]);
+    cx.globalAlpha = dplAlpha;
+    cx.font = 'bold 9px -apple-system,sans-serif'; cx.fillStyle = obj.color + 'bb'; cx.textAlign = 'left';
+    cx.fillText('◈  DATA PRODUCT \xB7 ' + obj.name.toUpperCase(), 18, LY[0] - 10);
+    cx.globalAlpha = 1;
+    for (var gi = 0; gi < 2; gi++) {
+      var gTop = LY[gi] + LH, gBot = LY[gi + 1], midY = (gTop + gBot) / 2, gcol = LCOLS[gi];
+      [.25, .4, .6, .75].forEach(function(fx) {
+        var ax = W * fx;
+        cx.beginPath(); cx.moveTo(ax, gBot); cx.lineTo(ax, gTop);
+        cx.strokeStyle = gcol + '1e'; cx.lineWidth = 1; cx.setLineDash([3, 5]); cx.stroke(); cx.setLineDash([]);
+        cx.beginPath(); cx.moveTo(ax, gTop + 1); cx.lineTo(ax - 4, gTop + 9); cx.lineTo(ax + 4, gTop + 9);
+        cx.closePath(); cx.fillStyle = gcol + '38'; cx.fill();
+      });
+      cx.font = '8px -apple-system,sans-serif'; cx.fillStyle = 'rgba(255,255,255,0.22)';
+      cx.textAlign = 'center'; cx.fillText('enriched \xB7 mapped \xB7 validated ↑', W / 2, midY + 4);
+    }
+    drawLayer(2, obj); drawLayer(1, obj); drawLayer(0, obj);
+    pkts = pkts.filter(function(p) { return p.t0 <= 1.1; });
+    pkts.forEach(function(p) {
+      p.t0 += p.spd;
+      for (var i = 0; i < 4; i++) {
+        var tt = Math.max(0, Math.min(1, p.t0) - i * .06);
+        var py = p.y1 + (p.y2 - p.y1) * tt;
+        cx.beginPath(); cx.arc(p.x, py, 3.5 - i * .7, 0, Math.PI * 2);
+        cx.fillStyle = p.col + Math.round((1 - i / 4) * 200).toString(16).padStart(2, '0');
+        cx.fill();
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+  resize(); draw(); new ResizeObserver(resize).observe(cv);
 })();
 
 /* ================================================================
